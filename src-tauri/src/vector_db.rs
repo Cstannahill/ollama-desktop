@@ -1,9 +1,9 @@
 use qdrant_client::{
-    payload::Payload,
-    qdrant::{CreateCollectionBuilder, Distance, PointStruct, UpsertPointsBuilder, VectorParamsBuilder},
-    Qdrant,
+    qdrant::{
+        CreateCollectionBuilder, Distance, PointStruct, UpsertPointsBuilder, VectorParamsBuilder,
+    },
+    Payload, Qdrant,
 };
-use uuid::Uuid;
 
 const QDRANT_URL: &str = "http://127.0.0.1:6333";
 const COLLECTION: &str = "chat";
