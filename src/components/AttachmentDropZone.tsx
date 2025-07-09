@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 export type PendingAttachment = {
   name: string;
@@ -11,7 +12,7 @@ export type PendingAttachment = {
 type Props = {
   threadId: string;
   attachments: PendingAttachment[];
-  setAttachments: (a: PendingAttachment[]) => void;
+  setAttachments: React.Dispatch<React.SetStateAction<PendingAttachment[]>>;
 };
 
 export default function AttachmentDropZone({ threadId, attachments, setAttachments }: Props) {
@@ -29,14 +30,20 @@ export default function AttachmentDropZone({ threadId, attachments, setAttachmen
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   useEffect(() => {
-    const unlisten = window.__TAURI__.event.listen("file-progress", (e: any) => {
-      const { fileName, status } = e.payload as any;
-      setAttachments((atts) =>
-        atts.map((a) => (a.name === fileName ? { ...a, status } : a))
-      );
-    });
+    if (!isTauri()) return;
+
+    const unlistenPromise = listen(
+      "file-progress",
+      (e: { payload: { fileName: string; status: PendingAttachment["status"] } }) => {
+        const { fileName, status } = e.payload;
+        setAttachments((atts) =>
+          atts.map((a) => (a.name === fileName ? { ...a, status } : a))
+        );
+      }
+    );
+
     return () => {
-      unlisten.then((f) => f());
+      unlistenPromise.then((f) => f());
     };
   }, [setAttachments]);
 
