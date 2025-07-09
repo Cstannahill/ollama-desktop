@@ -1,4 +1,4 @@
-use tiktoken_rs::{get_bpe_from_model, num_tokens};
+use tiktoken_rs::get_bpe_from_model;
 
 pub fn chunk_text(text: &str, max_tokens: usize) -> anyhow::Result<Vec<String>> {
     let enc = get_bpe_from_model("gpt-3.5-turbo")?;
@@ -6,7 +6,11 @@ pub fn chunk_text(text: &str, max_tokens: usize) -> anyhow::Result<Vec<String>> 
     let mut current = String::new();
 
     for line in text.lines() {
-        if num_tokens(&enc, &(current.clone() + line)) > max_tokens {
+        if enc
+            .encode_with_special_tokens(&(current.clone() + line))
+            .len()
+            > max_tokens
+        {
             out.push(current.trim().to_owned());
             current.clear();
         }

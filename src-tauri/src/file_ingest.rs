@@ -1,3 +1,4 @@
+use mime_guess::mime;
 use std::path::PathBuf;
 use uuid::Uuid;
 

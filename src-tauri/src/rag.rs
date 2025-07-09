@@ -1,9 +1,11 @@
-use reqwest::Client;
 use qdrant_client::{
-    payload::Payload,
-    qdrant::{CreateCollectionBuilder, Distance, PointStruct, SearchPointsBuilder, UpsertPointsBuilder, VectorParamsBuilder},
-    Qdrant,
+    qdrant::{
+        CreateCollectionBuilder, Distance, PointStruct, SearchPointsBuilder, UpsertPointsBuilder,
+        VectorParamsBuilder,
+    },
+    Payload, Qdrant,
 };
+use reqwest::Client;
 use uuid::Uuid;
 
 const QDRANT_URL: &str = "http://127.0.0.1:6333";
@@ -35,8 +37,7 @@ pub async fn query(text: &str, top_k: usize) -> Result<Vec<String>, String> {
 
     let search_res = client
         .search_points(
-            SearchPointsBuilder::new(COLLECTION, vector.clone(), top_k as u64)
-                .with_payload(true),
+            SearchPointsBuilder::new(COLLECTION, vector.clone(), top_k as u64).with_payload(true),
         )
         .await
         .map_err(|e| e.to_string())?;
@@ -48,10 +49,10 @@ pub async fn query(text: &str, top_k: usize) -> Result<Vec<String>, String> {
         .result
         .into_iter()
         .filter_map(|p| {
-            p.payload.and_then(|payload| {
-                let value: serde_json::Value = payload.into();
-                value.get("text").and_then(|v| v.as_str()).map(|s| s.to_string())
-            })
+            p.payload
+                .get("text")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
         })
         .collect();
 
@@ -59,7 +60,9 @@ pub async fn query(text: &str, top_k: usize) -> Result<Vec<String>, String> {
 }
 
 async fn store(client: &Qdrant, vector: Vec<f32>, text: &str) {
-    let payload: Payload = serde_json::json!({ "text": text }).try_into().unwrap_or_default();
+    let payload: Payload = serde_json::json!({ "text": text })
+        .try_into()
+        .unwrap_or_default();
     let point = PointStruct::new(Uuid::new_v4().to_string(), vector, payload);
     let _ = client
         .upsert_points(UpsertPointsBuilder::new(COLLECTION, vec![point]).wait(true))
