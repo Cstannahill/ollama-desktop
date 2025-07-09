@@ -14,22 +14,18 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
         (mime::TEXT, "plain") => std::fs::read_to_string(&path)?,
         (mime::TEXT, "markdown") => std::fs::read_to_string(&path)?,
         (mime::APPLICATION, "vnd.openxmlformats-officedocument.wordprocessingml.document") => {
-            use anyhow::Context;
-            use std::process::Command;
-
-            let output = Command::new("mammoth")
-                .arg(&path)
-                .arg("--output-format=markdown")
-                .output()
-                .context("failed to run mammoth")?;
-
-            if output.status.success() {
-                String::from_utf8_lossy(&output.stdout).into_owned()
-            } else {
-                return Err(anyhow::anyhow!(
-                    "mammoth failed with status {:?}",
-                    output.status.code()
-                ));
+            use docx_rs::DocxFile;
+            match DocxFile::from_file(&path).and_then(|d| d.read_docx()) {
+                Ok(doc) => doc
+                    .document
+                    .paragraphs
+                    .iter()
+                    .map(|p| p.text())
+                    .collect::<String>(),
+                Err(_) => {
+                    eprintln!("Failed to parse DOCX: {}", path.display());
+                    String::new()
+                }
             }
         }
         _ => return Err(anyhow::anyhow!("Unsupported mime: {}", mime.essence_str())),
