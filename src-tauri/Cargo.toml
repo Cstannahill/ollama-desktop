@@ -36,3 +36,6 @@ docx = "1"
 tiktoken-rs = "0.5"
 tokio-stream = "0.1"
 
+[patch.crates-io]
+jetscii = { path = "../patches/jetscii" }
+
