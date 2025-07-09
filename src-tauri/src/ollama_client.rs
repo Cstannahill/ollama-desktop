@@ -6,14 +6,21 @@ use serde_json::Value;
 pub async fn chat(
     model: String,
     prompt: String,
+    system: Option<String>,
 ) -> Result<impl Stream<Item = String>, reqwest::Error> {
     let client = Client::new();
+    let mut messages = Vec::new();
+    if let Some(sys) = system {
+        messages.push(serde_json::json!({"role": "system", "content": sys}));
+    }
+    messages.push(serde_json::json!({"role": "user", "content": prompt}));
+
     let res = client
         .post("http://127.0.0.1:11434/api/chat")
         .json(&serde_json::json!({
             "model": model,
             "stream": true,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": messages,
         }))
         .send()
         .await?;
