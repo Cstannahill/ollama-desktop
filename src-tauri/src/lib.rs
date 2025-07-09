@@ -24,9 +24,9 @@ async fn generate_chat(window: tauri::Window, model: String, prompt: String) -> 
     tauri::async_runtime::spawn(async move {
         futures_util::pin_mut!(stream);
         while let Some(tok) = stream.next().await {
-            let _ = window.emit("token", tok);
+            let _ = window.emit("chat-token", tok);
         }
-        let _ = window.emit("token_end", ());
+        let _ = window.emit("chat-end", ());
     });
     Ok(())
 }

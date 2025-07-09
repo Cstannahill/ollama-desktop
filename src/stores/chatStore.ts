@@ -21,7 +21,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({ messages: [...state.messages, user, assistant] }));
     const assistantId = assistant.id;
 
-    const unlisten = await listen<string>("token", (e) => {
+    const unlisten = await listen<string>("chat-token", (e) => {
       set((state) => ({
         messages: state.messages.map((m) =>
           m.id === assistantId ? { ...m, text: m.text + e.payload } : m
@@ -30,7 +30,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
 
     const done = new Promise<void>((resolve) => {
-      listen("token_end", () => resolve());
+      listen("chat-end", () => resolve());
     });
 
     try {
