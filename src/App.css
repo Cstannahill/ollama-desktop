@@ -114,3 +114,16 @@ button {
     background-color: #0f0f0f69;
   }
 }
+.chat {
+  margin: 1em 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.chat .user {
+  text-align: right;
+  margin: 0.25em 0;
+}
+.chat .assistant {
+  text-align: left;
+  margin: 0.25em 0;
+}
