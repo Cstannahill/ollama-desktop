@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 use crate::web_search::WebSearchTool;
 
@@ -22,10 +22,10 @@ pub struct ToolMeta {
     pub json_schema: Value,
 }
 
-pub fn registry() -> &'static RwLock<HashMap<&'static str, Box<dyn Tool + Send + Sync>>> {
-    static REG: Lazy<RwLock<HashMap<&'static str, Box<dyn Tool + Send + Sync>>>> = Lazy::new(|| {
-        let mut map: HashMap<&'static str, Box<dyn Tool + Send + Sync>> = HashMap::new();
-        map.insert("web_search", Box::new(WebSearchTool) as Box<dyn Tool + Send + Sync>);
+pub fn registry() -> &'static RwLock<HashMap<&'static str, Arc<dyn Tool + Send + Sync>>> {
+    static REG: Lazy<RwLock<HashMap<&'static str, Arc<dyn Tool + Send + Sync>>>> = Lazy::new(|| {
+        let mut map: HashMap<&'static str, Arc<dyn Tool + Send + Sync>> = HashMap::new();
+        map.insert("web_search", Arc::new(WebSearchTool) as Arc<dyn Tool + Send + Sync>);
         // TODO: additional tools (file_read, file_write, shell_exec)
         RwLock::new(map)
     });
