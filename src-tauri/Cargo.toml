@@ -30,6 +30,7 @@ futures-util = "0.3"
 anyhow = "1"
 mime_guess = "2"
 pdf-extract = "0.9"
+docx-rs = "0.4"
 tiktoken-rs = "0.5"
 tokio-stream = "0.1"
 
