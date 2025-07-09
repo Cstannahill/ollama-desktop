@@ -26,6 +26,15 @@ export default function ChatPane() {
           >
             {msg.text}
           </ReactMarkdown>
+          {msg.attachments && msg.attachments.length > 0 && (
+            <div className="flex gap-2 justify-end">
+              {msg.attachments.map((a) => (
+                <span key={a.name} className="text-xs">
+                  📄 {a.name} • {a.status}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

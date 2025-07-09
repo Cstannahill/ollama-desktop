@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useChatStore } from "../stores/chatStore";
+import AttachmentDropZone, { PendingAttachment } from "./AttachmentDropZone";
 
 export default function ChatInput() {
   const [text, setText] = useState("");
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  const threadIdRef = useRef(crypto.randomUUID());
   const { send, currentModel } = useChatStore();
 
   const handle = async (e: React.FormEvent) => {
@@ -12,8 +15,10 @@ export default function ChatInput() {
       alert("Pick a model first");
       return;
     }
-    await send(text);
+    await send(text, attachments);
     setText("");
+    setAttachments([]);
+    threadIdRef.current = crypto.randomUUID();
   };
 
   return (
@@ -24,9 +29,25 @@ export default function ChatInput() {
         onChange={(e) => setText(e.currentTarget.value)}
         placeholder="Say something..."
       />
-      <button className="border rounded px-3" type="submit">
+      <button
+        className="border rounded px-3"
+        type="submit"
+        disabled={attachments.some((a) => a.status === "processing")}
+      >
         Send
       </button>
+      <div className="flex gap-2">
+        {attachments.map((a) => (
+          <span key={a.name} className="text-sm">
+            📄 {a.name} • {a.status}
+          </span>
+        ))}
+      </div>
+      <AttachmentDropZone
+        threadId={threadIdRef.current}
+        attachments={attachments}
+        setAttachments={setAttachments}
+      />
     </form>
   );
 }
