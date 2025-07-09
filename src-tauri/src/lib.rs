@@ -3,6 +3,10 @@ use tauri::Emitter;
 
 mod ollama_client;
 mod rag;
+mod embeddings;
+mod vector_db;
+mod chunk;
+mod file_ingest;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -49,11 +53,41 @@ async fn generate_chat(
     Ok(())
 }
 
+#[tauri::command]
+async fn attach_file(window: tauri::Window, path: String, thread_id: String) -> Result<(), String> {
+    let id = thread_id
+        .parse()
+        .map_err(|e| format!("invalid thread id: {e}"))?;
+    let pb = std::path::PathBuf::from(&path);
+    match file_ingest::ingest(pb.clone(), id).await {
+        Ok(_) => {
+            let _ = window.emit(
+                "file-progress",
+                serde_json::json!({ "fileName": pb.file_name(), "status": "ready" }),
+            );
+            Ok(())
+        }
+        Err(e) => {
+            let msg = e.to_string();
+            let code = if msg.contains("Unsupported mime") {
+                "unsupported_mime"
+            } else {
+                "ingest_error"
+            };
+            let _ = window.emit(
+                "file-progress",
+                serde_json::json!({ "fileName": pb.file_name(), "status": "error", "message": msg }),
+            );
+            Err(serde_json::json!({"code": code, "message": msg }).to_string())
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, list_models, generate_chat])
+        .invoke_handler(tauri::generate_handler![greet, list_models, generate_chat, attach_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

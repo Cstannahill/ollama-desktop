@@ -2,7 +2,9 @@ import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
-export type Message = { id: string; role: "user" | "assistant"; text: string };
+export type Attachment = { name: string; mime: string; status: "processing" | "ready" | "error" };
+
+export type Message = { id: string; role: "user" | "assistant"; text: string; attachments?: Attachment[] };
 
 interface ChatState {
   messages: Message[];
@@ -10,7 +12,7 @@ interface ChatState {
   setModel: (m: string) => void;
   ragEnabled: boolean;
   toggleRag: () => void;
-  send: (text: string) => Promise<void>;
+  send: (text: string, attachments: Attachment[]) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -19,8 +21,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setModel: (m) => set({ currentModel: m }),
   ragEnabled: true,
   toggleRag: () => set((s) => ({ ragEnabled: !s.ragEnabled })),
-  send: async (text: string) => {
-    const user: Message = { id: crypto.randomUUID(), role: "user", text };
+  send: async (text: string, attachments: Attachment[]) => {
+    const user: Message = { id: crypto.randomUUID(), role: "user", text, attachments };
     const assistant: Message = { id: crypto.randomUUID(), role: "assistant", text: "" };
     set((state) => ({ messages: [...state.messages, user, assistant] }));
     const assistantId = assistant.id;
