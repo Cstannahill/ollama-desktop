@@ -37,3 +37,17 @@ Simple Tauri + React client that streams responses from a local Ollama daemon.
 1. Drag a PDF into the drop zone.
 2. Wait for the "parsed" status.
 3. Send a message and future queries can reference the file.
+
+## Tool system
+
+Tools let the assistant perform external actions. Each tool implements the `Tool` trait on the Rust side and is registered in `tool::registry()`. The frontend lists available tools via the `list_tools` command and you can enable them per chat.
+
+### Adding a tool
+
+1. Create a struct that implements `Tool`.
+2. Insert it into the registry in `tool.rs`.
+3. Optional: expose new IPC commands if needed.
+
+### Web Search
+
+This build includes a `web_search` tool that queries DuckDuckGo's Instant Answer API (no key required) and returns up to five results. All requests comply with DuckDuckGo's terms of service.
