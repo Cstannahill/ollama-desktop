@@ -1,49 +1,74 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import React, { useState } from "react";
+import useSWR from "swr";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { invoke } from "@tauri-apps/api/core";
+import { useChatStore } from "./stores/chatStore";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+const fetcher = () => invoke<string[]>("list_models");
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+function App() {
+  const { data: models } = useSWR("models", fetcher);
+  const { messages, send, currentModel, setModel } = useChatStore();
+  const [text, setText] = useState("");
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text) return;
+    await send(text);
+    setText("");
+  };
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div>
+        <select value={currentModel} onChange={(e) => setModel(e.target.value)}>
+          {models?.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
+      <div className="chat">
+        {messages.map((msg) => (
+          <div key={msg.id} className={msg.role}>
+            <ReactMarkdown
+              components={{
+                code({ inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || "");
+                  return !inline && match ? (
+                    <SyntaxHighlighter
+                      style={oneDark}
+                      language={match[1]}
+                      PreTag="div"
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {msg.text}
+            </ReactMarkdown>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleSend} className="row">
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          value={text}
+          onChange={(e) => setText(e.currentTarget.value)}
+          placeholder="Say something..."
         />
-        <button type="submit">Greet</button>
+        <button type="submit">Send</button>
       </form>
-      <p>{greetMsg}</p>
     </main>
   );
 }
