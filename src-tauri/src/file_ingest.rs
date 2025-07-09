@@ -14,14 +14,24 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
         (mime::TEXT, "plain") => std::fs::read_to_string(&path)?,
         (mime::TEXT, "markdown") => std::fs::read_to_string(&path)?,
         (mime::APPLICATION, "vnd.openxmlformats-officedocument.wordprocessingml.document") => {
-            use docx_rs::DocxFile;
-            match DocxFile::from_file(&path).and_then(|d| d.read_docx()) {
+            use docx::document::BodyContent;
+            use docx::DocxFile;
+            match DocxFile::from_file(&path).and_then(|f| f.parse()) {
                 Ok(doc) => doc
                     .document
-                    .paragraphs
+                    .body
+                    .content
                     .iter()
-                    .map(|p| p.text())
-                    .collect::<String>(),
+                    .filter_map(|c| match c {
+                        BodyContent::Paragraph(p) => Some(
+                            p.iter_text()
+                                .map(|s| s.as_ref())
+                                .collect::<String>()
+                        ),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n"),
                 Err(_) => {
                     eprintln!("Failed to parse DOCX: {}", path.display());
                     String::new()

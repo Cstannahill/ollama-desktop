@@ -129,16 +129,17 @@ async fn generate_chat(
         }
 
         if let Some((name, args)) = call {
-            let result = {
+            let tool = {
                 let map = reg.read().unwrap();
-                if let Some(tool) = map.get(name.as_str()) {
-                    match tool.call(args.clone()).await {
-                        Ok(r) => r,
-                        Err(e) => format!("⚠️ {}", e),
-                    }
-                } else {
-                    format!("⚠️ unknown tool: {}", name)
+                map.get(name.as_str()).cloned()
+            };
+            let result = if let Some(tool) = tool {
+                match tool.call(args.clone()).await {
+                    Ok(r) => r,
+                    Err(e) => format!("⚠️ {}", e),
                 }
+            } else {
+                format!("⚠️ unknown tool: {}", name)
             };
             let _ = window.emit(
                 "tool-message",
