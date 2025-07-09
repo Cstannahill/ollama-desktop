@@ -4,7 +4,7 @@ use uuid::Uuid;
 use anyhow::Result;
 use serde_json::json;
 
-use crate::{embeddings, vector_db, chunk::chunk_text};
+use crate::{chunk::chunk_text, embeddings, vector_db};
 
 pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
     let mime = mime_guess::from_path(&path).first_or_octet_stream();
@@ -13,16 +13,25 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
         (mime::TEXT, "plain") => std::fs::read_to_string(&path)?,
         (mime::TEXT, "markdown") => std::fs::read_to_string(&path)?,
         (mime::APPLICATION, "vnd.openxmlformats-officedocument.wordprocessingml.document") => {
-            use docx_rs::DocxFile;
-            let doc = DocxFile::from_file(&path)?.read_docx()?;
-            doc.document.paragraphs.iter().map(|p| p.text()).collect::<String>()
+            use anyhow::Context;
+            use std::process::Command;
+
+            let output = Command::new("mammoth")
+                .arg(&path)
+                .arg("--output-format=markdown")
+                .output()
+                .context("failed to run mammoth")?;
+
+            if output.status.success() {
+                String::from_utf8_lossy(&output.stdout).into_owned()
+            } else {
+                return Err(anyhow::anyhow!(
+                    "mammoth failed with status {:?}",
+                    output.status.code()
+                ));
+            }
         }
-        _ => {
-            return Err(anyhow::anyhow!(
-                "Unsupported mime: {}",
-                mime.essence_str()
-            ))
-        }
+        _ => return Err(anyhow::anyhow!("Unsupported mime: {}", mime.essence_str())),
     };
 
     let chunks = chunk_text(&raw_text, 512)?;
