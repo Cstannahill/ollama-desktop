@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -14,9 +14,19 @@ function App() {
   const { messages, send, currentModel, setModel } = useChatStore();
   const [text, setText] = useState("");
 
+  useEffect(() => {
+    if (models && models.length > 0 && !currentModel) {
+      setModel(models[0]);
+    }
+  }, [models, currentModel, setModel]);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text) return;
+    if (!currentModel) {
+      alert("Please select a model first");
+      return;
+    }
     await send(text);
     setText("");
   };
