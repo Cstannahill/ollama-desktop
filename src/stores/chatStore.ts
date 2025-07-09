@@ -8,6 +8,8 @@ interface ChatState {
   messages: Message[];
   currentModel: string;
   setModel: (m: string) => void;
+  ragEnabled: boolean;
+  toggleRag: () => void;
   send: (text: string) => Promise<void>;
 }
 
@@ -15,6 +17,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
   currentModel: "",
   setModel: (m) => set({ currentModel: m }),
+  ragEnabled: true,
+  toggleRag: () => set((s) => ({ ragEnabled: !s.ragEnabled })),
   send: async (text: string) => {
     const user: Message = { id: crypto.randomUUID(), role: "user", text };
     const assistant: Message = { id: crypto.randomUUID(), role: "assistant", text: "" };
@@ -37,6 +41,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       await invoke("generate_chat", {
         model: get().currentModel,
         prompt: text,
+        ragEnabled: get().ragEnabled,
       });
       await done;
     } catch (e) {

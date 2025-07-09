@@ -1,4 +1,3 @@
-import React from "react";
 import "./App.css";
 import ModelPicker from "./components/ModelPicker";
 import ChatPane from "./components/ChatPane";

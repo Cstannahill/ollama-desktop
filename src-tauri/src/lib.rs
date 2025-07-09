@@ -2,6 +2,7 @@ use futures_util::StreamExt;
 use tauri::Emitter;
 
 mod ollama_client;
+mod rag;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -17,8 +18,25 @@ async fn list_models() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-async fn generate_chat(window: tauri::Window, model: String, prompt: String) -> Result<(), String> {
-    let stream = ollama_client::chat(model, prompt)
+async fn generate_chat(
+    window: tauri::Window,
+    model: String,
+    prompt: String,
+    rag_enabled: bool,
+) -> Result<(), String> {
+    let mut system_prompt = None;
+    if rag_enabled {
+        if let Ok(ctx) = rag::query(&prompt, 4).await {
+            if !ctx.is_empty() {
+                system_prompt = Some(format!(
+                    "Use the following context to answer the user:\n{}",
+                    ctx.join("\n---\n")
+                ));
+            }
+        }
+    }
+
+    let stream = ollama_client::chat(model, prompt, system_prompt)
         .await
         .map_err(|e| format!("failed to connect to Ollama: {e}"))?;
     tauri::async_runtime::spawn(async move {
