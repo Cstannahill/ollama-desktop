@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --c-bg-primary: #0b0b09;
+  --c-bg-surface: #1b1916;
+  --c-accent: #fbcd14;
+  --brand-50: #fefbe8;
+  --brand-100: #fdf5c2;
+  --brand-200: #fbec96;
+  --brand-300: #f9e26c;
+  --brand-400: #f7d944;
+  --brand-500: #fbcd14;
+  --brand-600: #eab809;
+  --brand-700: #c99d04;
+  --brand-800: #a88402;
+  --brand-900: #866b00;
+}
