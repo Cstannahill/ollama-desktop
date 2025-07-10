@@ -10,6 +10,7 @@ export default function IndexPage() {
   return (
     <ChatLayout
       sidebarProps={{ chats: [], onNewChat: () => {}, onSelectChat: () => {} }}
+      input={<ChatInput onSend={(t) => send(t, [], crypto.randomUUID(), [])} />}
     >
       {messages.map((m) => (
         <div key={m.id} className="relative group">
@@ -25,7 +26,6 @@ export default function IndexPage() {
           )}
         </div>
       ))}
-      <ChatInput onSend={(t) => send(t, [], crypto.randomUUID(), [])} />
     </ChatLayout>
   )
 }

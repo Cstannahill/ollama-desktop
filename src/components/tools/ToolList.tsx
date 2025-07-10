@@ -5,6 +5,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
 
 const tools = [
   { name: 'RAG', description: 'Retrieval augmented generation', category: 'RAG' },
+  { name: 'web_search', description: 'Search the web', category: 'Web' },
+  { name: 'file_read', description: 'Read a file from the workspace', category: 'File' },
+  { name: 'file_write', description: 'Write a file to the workspace', category: 'File' },
   { name: 'shell_exec', description: 'Execute shell commands', category: 'Advanced', risky: true },
 ]
 
@@ -17,6 +20,8 @@ export function ToolList() {
       <TabsList>
         <TabsTrigger value="All">All</TabsTrigger>
         <TabsTrigger value="RAG">RAG</TabsTrigger>
+        <TabsTrigger value="Web">Web</TabsTrigger>
+        <TabsTrigger value="File">File</TabsTrigger>
         <TabsTrigger value="Advanced">Advanced</TabsTrigger>
       </TabsList>
       <TabsContent value="All" className="space-y-2">
@@ -27,6 +32,20 @@ export function ToolList() {
       <TabsContent value="RAG" className="space-y-2">
         {tools
           .filter((t) => t.category === 'RAG')
+          .map((t) => (
+            <ToolCard key={t.name} {...t} />
+          ))}
+      </TabsContent>
+      <TabsContent value="Web" className="space-y-2">
+        {tools
+          .filter((t) => t.category === 'Web')
+          .map((t) => (
+            <ToolCard key={t.name} {...t} />
+          ))}
+      </TabsContent>
+      <TabsContent value="File" className="space-y-2">
+        {tools
+          .filter((t) => t.category === 'File')
           .map((t) => (
             <ToolCard key={t.name} {...t} />
           ))}
