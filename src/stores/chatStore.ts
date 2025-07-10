@@ -5,7 +5,7 @@ import { usePermissionStore } from "./permissionStore";
 
 export type Attachment = { name: string; mime: string; status: "processing" | "ready" | "error" };
 
-export type Message = { id: string; role: "user" | "assistant" | "tool"; text: string; attachments?: Attachment[] };
+export type Message = { id: string; role: "user" | "assistant" | "tool"; text: string; name?: string; attachments?: Attachment[] };
 
 interface ChatState {
   messages: Message[];
@@ -54,21 +54,48 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
     });
 
+    let toolMsgId: string | null = null;
     const unlistenTool = await listen<{ name: string; content: string }>(
       "tool-message",
       (e) => {
         set((s) => {
           const idx = s.messages.findIndex((m) => m.id === assistantId);
           const msgs = [...s.messages];
-          msgs.splice(idx, 0, {
-            id: crypto.randomUUID(),
-            role: "tool",
-            text: e.payload.content,
-          });
+          if (toolMsgId) {
+            msgs = msgs.map((m) =>
+              m.id === toolMsgId ? { ...m, text: e.payload.content, name: e.payload.name } : m
+            );
+          } else {
+            toolMsgId = crypto.randomUUID();
+            msgs.splice(idx, 0, {
+              id: toolMsgId,
+              role: "tool",
+              text: e.payload.content,
+              name: e.payload.name,
+            });
+          }
           return { messages: msgs };
         });
       }
     );
+
+    const unlistenStream = await listen<string>("tool-stream", (e) => {
+      if (!toolMsgId) {
+        set((s) => {
+          const idx = s.messages.findIndex((m) => m.id === assistantId);
+          const msgs = [...s.messages];
+          toolMsgId = crypto.randomUUID();
+          msgs.splice(idx, 0, { id: toolMsgId, role: "tool", text: e.payload, name: "shell_exec" });
+          return { messages: msgs };
+        });
+      } else {
+        set((s) => ({
+          messages: s.messages.map((m) =>
+            m.id === toolMsgId ? { ...m, text: m.text + e.payload } : m
+          ),
+        }));
+      }
+    });
 
     const done = new Promise<void>((resolve) => {
       listen("chat-end", () => resolve());
@@ -95,6 +122,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } finally {
       unlistenToken();
       unlistenTool();
+      unlistenStream();
     }
   },
 }));

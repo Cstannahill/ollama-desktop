@@ -1,3 +1,4 @@
+import React from "react";
 import useSWR from "swr";
 import { invoke } from "@tauri-apps/api/core";
 import { usePermissionStore } from "../stores/permissionStore";
@@ -7,6 +8,7 @@ export default function ToolPermissionModal() {
   const { pendingTool, grantPermission, denyPermission } = usePermissionStore();
   const { data } = useSWR<ToolMeta[]>("tools", () => invoke("list_tools") as Promise<ToolMeta[]>);
   const tool = data?.find((t) => t.name === pendingTool);
+  const [ack, setAck] = React.useState(false);
   if (!pendingTool) return null;
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -16,10 +18,17 @@ export default function ToolPermissionModal() {
         <p className="text-sm mb-4">
           This tool can read or write files on your machine inside the workspace directory.
         </p>
+        {pendingTool === "shell_exec" && (
+          <label className="flex items-center gap-2 text-sm mb-2">
+            <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />
+            I understand this can execute local programs.
+          </label>
+        )}
         <div className="flex justify-end gap-2">
           <button
             className="border rounded px-3"
             onClick={() => grantPermission(pendingTool)}
+            disabled={pendingTool === "shell_exec" && !ack}
           >
             Allow
           </button>

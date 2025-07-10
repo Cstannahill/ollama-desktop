@@ -1,11 +1,15 @@
 use futures_util::StreamExt;
 use tauri::Emitter;
+use audit_log::{record, LogEntry};
+use chrono::Utc;
 
 mod chunk;
 mod config;
 mod embeddings;
 mod file_ingest;
 mod file_tools;
+mod shell_exec;
+mod audit_log;
 mod ollama_client;
 mod rag;
 mod tool;
@@ -45,7 +49,7 @@ async fn generate_chat(
     rag_enabled: bool,
     enabled_tools: Vec<String>,
     allowed_tools: Vec<String>,
-    _thread_id: String,
+    thread_id: String,
 ) -> Result<(), String> {
     let mut system_prompt = String::new();
     {
@@ -158,9 +162,15 @@ async fn generate_chat(
                 map.get(name.as_str()).cloned()
             };
             let result = if let Some(tool) = tool {
-                match tool.call(args.clone()).await {
-                    Ok(r) => r,
-                    Err(e) => format!("⚠️ {}", e),
+                match tool.call(&window, args.clone()).await {
+                    Ok(r) => {
+                        record(LogEntry { when: Utc::now(), thread_id: thread_id.clone(), tool: name.clone(), args: args.clone(), ok: true });
+                        r
+                    },
+                    Err(e) => {
+                        record(LogEntry { when: Utc::now(), thread_id: thread_id.clone(), tool: name.clone(), args: args.clone(), ok: false });
+                        format!("⚠️ {}", e)
+                    }
                 }
             } else {
                 format!("⚠️ unknown tool: {}", name)
@@ -215,6 +225,7 @@ async fn attach_file(window: tauri::Window, path: String, thread_id: String) -> 
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+// TODO: mobile build targets
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -223,7 +234,8 @@ pub fn run() {
             list_models,
             list_tools,
             generate_chat,
-            attach_file
+            attach_file,
+            audit_log::get_audit_log
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

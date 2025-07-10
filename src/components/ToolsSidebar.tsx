@@ -2,7 +2,7 @@ import { useChatStore } from "../stores/chatStore";
 
 const tools = ["Web Search", "File Read", "Code Exec"];
 
-// TODO: per-file RAG weighting UI
+// TODO: vector weighting slider per attachment
 
 export default function ToolsSidebar() {
   const { ragEnabled, toggleRag } = useChatStore();
