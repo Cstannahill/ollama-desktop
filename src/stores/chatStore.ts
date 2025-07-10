@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { usePermissionStore } from "./permissionStore";
+import { toast } from 'sonner'
 
 export type Attachment = { name: string; mime: string; status: "processing" | "ready" | "error" };
 
@@ -113,6 +114,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       await done;
     } catch (e: any) {
       console.error(e);
+      toast('Error sending message');
       try {
         const err = JSON.parse(e);
         if (err.code === "NeedPermission") {

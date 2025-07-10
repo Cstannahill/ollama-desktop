@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ScrollArea, Button } from '@/components/ui'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeToggle } from '@/components/common'
 import { cn } from '@/lib/utils'
 import { Menu } from 'lucide-react'
 
@@ -28,8 +28,8 @@ export function Sidebar({ chats, onNewChat, onSelectChat }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'bg-bg-panel text-white flex flex-col h-full transition-all',
-        collapsed ? 'w-16' : 'w-64'
+        'bg-bg-panel text-white flex flex-col h-full transition-all group',
+        collapsed ? 'w-16 hover:w-24' : 'w-64'
       )}
     >
       <div className="flex items-center justify-between p-4">

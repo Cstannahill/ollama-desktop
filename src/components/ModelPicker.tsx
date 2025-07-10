@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from 'sonner'
 import useSWR from "swr";
 import { invoke } from "@tauri-apps/api/core";
 import { useChatStore } from "../stores/chatStore";
@@ -23,7 +24,10 @@ export default function ModelPicker() {
     <select
       className="border rounded p-1"
       value={currentModel}
-      onChange={(e) => setModel(e.target.value)}
+      onChange={(e) => {
+        setModel(e.target.value)
+        toast('Model switched')
+      }}
     >
       {models.map((m) => (
         <option key={m} value={m}>

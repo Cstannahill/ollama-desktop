@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system'
+export type Theme = 'light' | 'dark'
 
 interface ThemeContext {
   theme: Theme
@@ -12,8 +12,12 @@ const ThemeContext = createContext<ThemeContext | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system'
-    return (localStorage.getItem('theme') as Theme) || 'system'
+    if (typeof window === 'undefined') return 'light'
+    const stored = localStorage.getItem('theme') as Theme | null
+    if (stored) return stored
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
   })
 
   const setTheme = (t: Theme) => {
@@ -25,9 +29,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = window.document.documentElement
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const dark = theme === 'dark' || (theme === 'system' && systemDark)
-    root.classList.toggle('dark', dark)
+    root.classList.remove('light', 'dark')
+    root.classList.add(theme)
   }, [theme])
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
