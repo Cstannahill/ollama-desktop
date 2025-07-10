@@ -20,7 +20,7 @@ const Switch = React.forwardRef<
       className={cn(
         "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50",
         "data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-600",
-        "data-[state=checked]:bg-primary",
+        "data-[state=checked]:bg-switch",
         className
       )}
       {...props}
