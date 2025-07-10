@@ -5,6 +5,7 @@ use chrono::Utc;
 use zip::{ZipWriter, write::FileOptions};
 use walkdir::WalkDir;
 use std::io::Write;
+use tauri_plugin_notification;
 
 mod chunk;
 mod config;
@@ -251,9 +252,17 @@ async fn update_thread_settings(thread_id: String, top_k: u8, ctx_tokens: u16) -
         .map_err(|e| e.to_string())
 }
 
+#[derive(serde::Deserialize)]
+struct MtlsPaths { cert: String, key: String, ca: Option<String> }
+
 #[tauri::command]
-fn set_server_settings(host: String, port: u16, token: Option<String>) {
-    ollama_client::set_server(host, port, token);
+fn set_server_settings(host: String, port: u16, token: Option<String>, mtls: Option<MtlsPaths>) -> Result<(), String> {
+    if host.starts_with("http://") && !(host.contains("127.0.0.1") || host.contains("localhost")) {
+        return Err("HTTPS required for remote hosts".into());
+    }
+    let m = mtls.map(|m| ollama_client::MtlsConfig { cert: m.cert, key: m.key, ca: m.ca });
+    ollama_client::set_server(host, port, token, m);
+    Ok(())
 }
 
 #[tauri::command]
@@ -318,11 +327,41 @@ fn import_workspace(zip_path: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn save_cloud_credentials(token: Option<String>, cert: Option<String>, key: Option<String>, ca: Option<String>) -> Result<(), String> {
+    let service = "ollama_chat.cloud_credentials";
+    let kc = tauri::api::keychain::Keychain::new(service, "default");
+    let data = serde_json::json!({"token": token, "cert": cert, "key": key, "ca": ca});
+    kc.set_password(&data.to_string()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn load_cloud_credentials() -> Result<Option<serde_json::Value>, String> {
+    let service = "ollama_chat.cloud_credentials";
+    let kc = tauri::api::keychain::Keychain::new(service, "default");
+    match kc.get_password() {
+        Ok(p) => Ok(serde_json::from_str(&p).ok()),
+        Err(_) => Ok(None),
+    }
+}
+
+#[tauri::command]
+async fn poll_notifications(since: i64) -> Result<serde_json::Value, String> {
+    ollama_client::poll_notifications(since).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_device_token(token: String) -> Result<(), String> {
+    let kc = tauri::api::keychain::Keychain::new("ollama_chat.cloud_credentials", "device");
+    kc.set_password(&token).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 // TODO: mobile build targets
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             list_models,
@@ -330,10 +369,14 @@ pub fn run() {
             generate_chat,
             attach_file,
             set_vector_weight,
-            update_thread_settings,
-            set_server_settings,
-            export_workspace,
-            import_workspace,
+    update_thread_settings,
+    set_server_settings,
+    save_cloud_credentials,
+    load_cloud_credentials,
+    poll_notifications,
+    save_device_token,
+    export_workspace,
+    import_workspace,
             audit_log::get_audit_log
         ])
         .run(tauri::generate_context!())

@@ -56,3 +56,7 @@ This build includes a `web_search` tool that queries DuckDuckGo's Instant Answer
 
 Each attachment has an Importance slider (0.0–2.0). Adjusting it updates search scoring in Qdrant. Thread settings let you change Top K results and context token limits. Settings persist per thread.
 \n// TODO: project-level export/import (zip workspace + threads)
+## Deploying Ollama Behind JWT / mTLS
+
+Set the server host to your HTTPS endpoint and configure the Bearer Token or mTLS certificate paths under **Server Settings**. Credentials are stored securely in the OS keychain under the service name `ollama_chat.cloud_credentials`.
+\n// TODO: shared conversation links (multi-user)\n// TODO: end-to-end encryption of exported ZIPs

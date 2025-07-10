@@ -5,7 +5,10 @@
     "identifier": "com.christian.ollamadesktop"
   },
   "android": {
-    "permissions": ["INTERNET", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+    "permissions": ["INTERNET", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"],
+    "plugins": {
+      "notification": {}
+    }
   }
 }
 // TODO: push-notification hook for mobile

@@ -5,7 +5,10 @@
     "identifier": "com.christian.ollamadesktop"
   },
   "ios": {
-    "permissions": ["NSFileProviderDomainUsageDescription", "NSAppTransportSecurity"]
+    "permissions": ["NSFileProviderDomainUsageDescription", "NSAppTransportSecurity"],
+    "plugins": {
+      "notification": {}
+    }
   }
 }
 // TODO: push-notification hook for mobile
