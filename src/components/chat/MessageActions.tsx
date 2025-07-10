@@ -15,7 +15,7 @@ export interface MessageActionsProps {
 /**
  * Actions available for each message.
  */
-export function MessageActions({ text, onDelete, className }: MessageActionsProps) {
+export function MessageActions({ text, onDelete = undefined, className }: MessageActionsProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(text)
     toast('Copied to clipboard')
@@ -47,7 +47,3 @@ export function MessageActions({ text, onDelete, className }: MessageActionsProp
   )
 }
 
-MessageActions.defaultProps = {
-  onDelete: undefined,
-  className: undefined,
-}

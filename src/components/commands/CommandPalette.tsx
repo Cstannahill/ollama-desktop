@@ -19,7 +19,7 @@ export interface CommandPaletteProps {
 /**
  * Global command palette triggered with meta+k / ctrl+k.
  */
-export function CommandPalette({ defaultOpen, className }: CommandPaletteProps) {
+export function CommandPalette({ defaultOpen = false, className }: CommandPaletteProps) {
   const [open, setOpen] = useState(!!defaultOpen)
 
   useHotkeys(
@@ -63,7 +63,3 @@ export function CommandPalette({ defaultOpen, className }: CommandPaletteProps) 
   )
 }
 
-CommandPalette.defaultProps = {
-  defaultOpen: false,
-  className: undefined,
-}
