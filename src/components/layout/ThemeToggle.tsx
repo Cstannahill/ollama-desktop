@@ -2,6 +2,7 @@ import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { useTheme } from './theme-provider'
 
+/** Toggle between light and dark mode. */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)

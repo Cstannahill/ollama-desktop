@@ -4,12 +4,16 @@ import { ThemeToggle } from './ThemeToggle'
 import { cn } from '@/lib/utils'
 import { Menu } from 'lucide-react'
 
+/** Props for {@link Sidebar}. */
 export interface SidebarProps {
   chats: { id: string; title: string }[]
   onNewChat: () => void
   onSelectChat: (id: string) => void
 }
 
+/**
+ * Collapsible sidebar listing chats and settings.
+ */
 export function Sidebar({ chats, onNewChat, onSelectChat }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
 

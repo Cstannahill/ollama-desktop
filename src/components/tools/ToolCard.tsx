@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui'
+/** Props for {@link ToolCard}. */
 
 export interface ToolCardProps {
   name: string
@@ -6,6 +7,9 @@ export interface ToolCardProps {
   onClick?: () => void
 }
 
+/**
+ * Card representation of a tool.
+ */
 export function ToolCard({ name, description, onClick }: ToolCardProps) {
   return (
     <Card className="p-4 hover:bg-bg-panel/50 cursor-pointer" onClick={onClick}>
