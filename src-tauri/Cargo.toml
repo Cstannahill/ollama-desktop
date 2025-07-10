@@ -40,6 +40,8 @@ bytesize = "1"
 path-clean = "0.1"
 sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio-native-tls"] }
 chrono = { version = "0.4", features = ["serde"] }
+zip = "0.6"
+walkdir = "2"
 
 [patch.crates-io]
 jetscii = { path = "../patches/jetscii" }

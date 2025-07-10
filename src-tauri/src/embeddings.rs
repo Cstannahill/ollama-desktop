@@ -1,15 +1,20 @@
 use reqwest::Client;
+use crate::ollama_client;
 
 const EMBED_MODEL: &str = "nomic-embed-text";
 
 pub async fn embed(text: &str) -> anyhow::Result<Vec<f32>> {
     let client = Client::new();
-    let v: serde_json::Value = client
-        .post("http://127.0.0.1:11434/api/embeddings")
+    let mut req = client
+        .post(format!("{}/api/embeddings", ollama_client::base_url()))
         .json(&serde_json::json!({
             "model": EMBED_MODEL,
             "prompt": text,
-        }))
+        }));
+    if let Some(t) = ollama_client::bearer_token() {
+        req = req.bearer_auth(t);
+    }
+    let v: serde_json::Value = req
         .send()
         .await?
         .json()
