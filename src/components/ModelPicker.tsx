@@ -22,7 +22,7 @@ export default function ModelPicker() {
 
   return (
     <select
-      className="border-input bg-background text-foreground border rounded p-1"
+      className="border-input bg-background text-black dark:text-black border rounded p-1"
       value={currentModel}
       onChange={(e) => {
         setModel(e.target.value)
