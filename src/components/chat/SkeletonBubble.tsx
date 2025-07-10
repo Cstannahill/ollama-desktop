@@ -9,7 +9,7 @@ export interface SkeletonBubbleProps {
 /**
  * Placeholder bubble shown while assistant is thinking.
  */
-export function SkeletonBubble({ className }: SkeletonBubbleProps) {
+export function SkeletonBubble({ className }: SkeletonBubbleProps = {}) {
   return (
     <div
       className={cn('rounded-lg bg-white/10 animate-pulse h-8 w-32', className)}
@@ -18,6 +18,3 @@ export function SkeletonBubble({ className }: SkeletonBubbleProps) {
   )
 }
 
-SkeletonBubble.defaultProps = {
-  className: undefined,
-}

@@ -11,7 +11,7 @@ export interface ThemeToggleProps {
 /**
  * Toggle between light and dark theme.
  */
-export function ThemeToggle({ className }: ThemeToggleProps) {
+export function ThemeToggle({ className }: ThemeToggleProps = {}) {
   const { theme, setTheme } = useTheme()
   const isDark = theme === 'dark'
   const toggle = () => setTheme(isDark ? 'light' : 'dark')
@@ -29,6 +29,3 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   )
 }
 
-ThemeToggle.defaultProps = {
-  className: undefined,
-}
