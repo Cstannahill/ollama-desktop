@@ -1,7 +1,8 @@
-import useSWR from "swr";
-import { invoke } from "@tauri-apps/api/core";
-import { useChatStore } from "../stores/chatStore";
-import { usePermissionStore } from "../stores/permissionStore";
+import useSWR from "swr"
+import { invoke } from "@tauri-apps/api/core"
+import { ScrollArea, Separator, Switch } from '@/components/ui'
+import { useChatStore } from "../stores/chatStore"
+import { usePermissionStore } from "../stores/permissionStore"
 
 export type ToolMeta = {
   name: string;
@@ -23,37 +24,39 @@ export default function ToolPicker() {
   const exec = data?.find((t) => t.name === "shell_exec");
 
   const renderTool = (t: ToolMeta, label?: string) => (
-    <label key={t.name} className="flex items-center gap-1">
-      <input
-        type="checkbox"
+    <div key={t.name} className="flex items-center justify-between gap-2">
+      <span>{label || t.name}</span>
+      <Switch
         checked={enabledTools.includes(t.name)}
-        onChange={() => {
+        onCheckedChange={() => {
           if (
             enabledTools.includes(t.name) ||
             allowedToolsByThread[currentThreadId]?.includes(t.name)
           ) {
-            toggleTool(t.name);
-            mutate();
+            toggleTool(t.name)
+            mutate()
           } else {
-            requestPermission(t.name);
+            requestPermission(t.name)
           }
         }}
       />
-      {label || t.name}
-    </label>
-  );
+    </div>
+  )
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
+    <ScrollArea className="h-48 w-full pr-2">
+      <div className="flex flex-col gap-2 p-1">
         {basic.map((t) => renderTool(t))}
+        {exec && (
+          <>
+            <Separator className="my-2" />
+            <div>
+              <h4 className="text-sm font-bold mb-1">Advanced Tools</h4>
+              {renderTool(exec, "⚠ shell_exec (risky)")}
+            </div>
+          </>
+        )}
       </div>
-      {exec && (
-        <div className="mt-2">
-          <h4 className="text-sm font-bold mb-1">Advanced Tools</h4>
-          {renderTool(exec, "⚠ shell_exec (risky)")}
-        </div>
-      )}
-    </div>
-  );
+    </ScrollArea>
+  )
 }
