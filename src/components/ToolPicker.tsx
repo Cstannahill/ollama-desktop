@@ -7,23 +7,6 @@ import { useChatStore } from "../stores/chatStore"
 import { usePermissionStore } from "../stores/permissionStore"
 
 export type ToolMeta = {
-  name: string;
-  description: string;
-  json_schema: any;
-};
-
-
-export default function ToolPicker() {
-  const { enabledTools, toggleTool } = useChatStore();
-  const { requestPermission, allowedToolsByThread, currentThreadId } =
-    usePermissionStore();
-  const { data, mutate } = useSWR<ToolMeta[]>(
-    "tools",
-    () => invoke("list_tools") as Promise<ToolMeta[]>
-  );
-
-  const basic = data?.filter((t) => t.name !== "shell_exec") || [];
-  const exec = data?.find((t) => t.name === "shell_exec");
   name: string
   description: string
   json_schema: any
@@ -31,35 +14,24 @@ export default function ToolPicker() {
 
 export default function ToolPicker() {
   const { enabledTools, toggleTool } = useChatStore()
-  const {
-    requestPermission,
-    allowedToolsByThread,
-    currentThreadId,
-  } = usePermissionStore()
-
+  const { requestPermission, allowedToolsByThread, currentThreadId } =
+    usePermissionStore()
   const {
     data: tools,
     error,
     isValidating: isLoading,
     mutate,
-  } = useSWR<ToolMeta[]>(
-    "tools",
-    () => invoke("list_tools") as Promise<ToolMeta[]>
-  )
+  } = useSWR<ToolMeta[]>("tools", () => invoke("list_tools") as Promise<ToolMeta[]>)
 
   if (isLoading) {
     return (
-      <div className="py-4 text-center text-sm text-gray-500">
-        Loading tools…
-      </div>
+      <div className="py-4 text-center text-sm text-gray-500">Loading tools…</div>
     )
   }
 
   if (error) {
     return (
-      <div className="py-4 text-center text-sm text-red-600">
-        Failed to load tools
-      </div>
+      <div className="py-4 text-center text-sm text-red-600">Failed to load tools</div>
     )
   }
 
@@ -67,15 +39,13 @@ export default function ToolPicker() {
   const execTool = tools!.find((t) => t.name === "shell_exec")
 
   const handleToggle = (t: ToolMeta) => (checked: boolean) => {
-    const isAllowed =
-      allowedToolsByThread[currentThreadId]?.includes(t.name)
+    const isAllowed = allowedToolsByThread[currentThreadId]?.includes(t.name)
     const isEnabled = enabledTools.includes(t.name)
 
     if (isEnabled || isAllowed) {
       toggleTool(t.name)
-      mutate() // revalidate
+      mutate()
     } else {
-      // If trying to enable without permission
       requestPermission(t.name)
     }
   }
@@ -83,8 +53,7 @@ export default function ToolPicker() {
   const renderSwitch = (t: ToolMeta, label?: string) => {
     const isChecked = enabledTools.includes(t.name)
     const isDisabled =
-      !isChecked &&
-      !allowedToolsByThread[currentThreadId]?.includes(t.name)
+      !isChecked && !allowedToolsByThread[currentThreadId]?.includes(t.name)
 
     return (
       <div key={t.name} className="flex items-center justify-between gap-2">
@@ -93,10 +62,7 @@ export default function ToolPicker() {
           checked={isChecked}
           disabled={isDisabled}
           onCheckedChange={handleToggle(t)}
-          className="radix-switch-root"
-        >
-
-        </Switch>
+        />
       </div>
     )
   }
@@ -109,7 +75,7 @@ export default function ToolPicker() {
           <>
             <Separator className="my-2" />
             <div>
-              <h4 className="text-sm font-bold mb-1">Advanced Tools</h4>
+              <h4 className="mb-1 text-sm font-bold">Advanced Tools</h4>
               {renderSwitch(execTool, "⚠ shell_exec (risky)")}
             </div>
           </>
