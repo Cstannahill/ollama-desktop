@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "package": {
+    "productName": "ollama-desktop",
+    "identifier": "com.christian.ollamadesktop"
+  },
+  "android": {
+    "permissions": ["INTERNET", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+  }
+}
+// TODO: push-notification hook for mobile

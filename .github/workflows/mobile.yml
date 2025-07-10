@@ -1,0 +1,40 @@
+name: mobile-builds
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm tauri android build --apk --target aarch64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: src-tauri/target/**/*.apk
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm tauri ios build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ios-app
+          path: src-tauri/target/**/*.app

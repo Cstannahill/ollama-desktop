@@ -2,6 +2,9 @@ use futures_util::StreamExt;
 use tauri::Emitter;
 use audit_log::{record, LogEntry};
 use chrono::Utc;
+use zip::{ZipWriter, write::FileOptions};
+use walkdir::WalkDir;
+use std::io::Write;
 
 mod chunk;
 mod config;
@@ -107,14 +110,18 @@ async fn generate_chat(
     messages.push(serde_json::json!({"role": "user", "content": prompt}));
 
     loop {
-        let res = client
-            .post("http://127.0.0.1:11434/api/chat")
+        let mut req = client
+            .post(format!("{}/api/chat", ollama_client::base_url()))
             .json(&serde_json::json!({
                 "model": model,
                 "stream": true,
                 "messages": messages,
                 "tools": tool_specs,
-            }))
+            }));
+        if let Some(t) = ollama_client::bearer_token() {
+            req = req.bearer_auth(t);
+        }
+        let res = req
             .send()
             .await
             .map_err(|e| format!("failed to connect to Ollama: {e}"))?;
@@ -244,6 +251,73 @@ async fn update_thread_settings(thread_id: String, top_k: u8, ctx_tokens: u16) -
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn set_server_settings(host: String, port: u16, token: Option<String>) {
+    ollama_client::set_server(host, port, token);
+}
+
+#[tauri::command]
+fn export_workspace(thread_id: String) -> Result<String, String> {
+    let out = std::env::temp_dir().join(format!("workspace_{thread_id}.zip"));
+    let file = std::fs::File::create(&out).map_err(|e| e.to_string())?;
+    let mut zip = ZipWriter::new(file);
+    let opts = FileOptions::default();
+
+    let db_path = format!("{}/chat.sqlite", crate::config::WORKSPACE_DIR);
+    if std::path::Path::new(&db_path).exists() {
+        zip.start_file("chat.sqlite", opts).map_err(|e| e.to_string())?;
+        zip.write_all(&std::fs::read(&db_path).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+    }
+
+    let dir = std::path::Path::new(crate::config::WORKSPACE_DIR).join(&thread_id);
+    if dir.exists() {
+        for e in WalkDir::new(&dir) {
+            let e = e.map_err(|e| e.to_string())?;
+            if e.file_type().is_file() {
+                let rel = e.path().strip_prefix(crate::config::WORKSPACE_DIR).unwrap();
+                zip.start_file(rel.to_string_lossy(), opts).map_err(|e| e.to_string())?;
+                zip.write_all(&std::fs::read(e.path()).map_err(|er| er.to_string())?)
+                    .map_err(|er| er.to_string())?;
+            }
+        }
+    }
+
+    let log = serde_json::to_vec(&audit_log::get_audit_log(thread_id)).map_err(|e| e.to_string())?;
+    zip.start_file("audit_log.json", opts).map_err(|e| e.to_string())?;
+    zip.write_all(&log).map_err(|e| e.to_string())?;
+
+    zip.finish().map_err(|e| e.to_string())?;
+    Ok(out.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn import_workspace(zip_path: String) -> Result<(), String> {
+    let file = std::fs::File::open(&zip_path).map_err(|e| e.to_string())?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+    for i in 0..zip.len() {
+        let mut f = zip.by_index(i).map_err(|e| e.to_string())?;
+        let out = std::path::Path::new(crate::config::WORKSPACE_DIR).join(f.name());
+        if f.name().ends_with('/') {
+            std::fs::create_dir_all(&out).map_err(|e| e.to_string())?;
+            continue;
+        }
+        if let Some(p) = out.parent() { std::fs::create_dir_all(p).ok(); }
+        let mut o = std::fs::File::create(&out).map_err(|e| e.to_string())?;
+        std::io::copy(&mut f, &mut o).map_err(|e| e.to_string())?;
+    }
+    let log_path = std::path::Path::new(crate::config::WORKSPACE_DIR).join("audit_log.json");
+    if log_path.exists() {
+        if let Ok(d) = std::fs::read(&log_path) {
+            if let Ok(entries) = serde_json::from_slice::<Vec<audit_log::LogEntry>>(&d) {
+                for e in entries { audit_log::record(e); }
+            }
+        }
+        let _ = std::fs::remove_file(log_path);
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 // TODO: mobile build targets
 pub fn run() {
@@ -257,6 +331,9 @@ pub fn run() {
             attach_file,
             set_vector_weight,
             update_thread_settings,
+            set_server_settings,
+            export_workspace,
+            import_workspace,
             audit_log::get_audit_log
         ])
         .run(tauri::generate_context!())
