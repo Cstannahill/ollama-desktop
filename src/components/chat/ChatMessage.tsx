@@ -3,13 +3,19 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { Avatar, AvatarFallback, AvatarImage, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
+/** Roles supported by {@link ChatMessage}. */
 export type ChatRole = 'assistant' | 'user' | 'error' | 'system'
 
 export interface ChatMessageProps {
+  /** Sender role. */
   role: ChatRole
+  /** Message content. */
   text: string
 }
 
+/**
+ * Display a single chat message with avatar and Markdown rendering.
+ */
 export function ChatMessage({ role, text }: ChatMessageProps) {
   const isUser = role === 'user'
   return (

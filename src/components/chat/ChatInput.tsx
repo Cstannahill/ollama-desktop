@@ -1,10 +1,16 @@
 import { FormEvent, useRef, useState } from 'react'
 import { Textarea, Button } from '@/components/ui'
 
+/** Props for {@link ChatInput}. */
 export interface ChatInputProps {
+  /** Callback when message is submitted. */
   onSend: (text: string) => void
+
 }
 
+/**
+ * Input form for sending chat messages.
+ */
 export function ChatInput({ onSend }: ChatInputProps) {
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
