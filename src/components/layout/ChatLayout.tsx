@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetTrigger, Button } from '@/components/ui'
 import { Sidebar } from './Sidebar'
 import { ScrollArea } from '@/components/ui'
 import { ToolList } from '../tools/ToolList'
+import ModelPicker from '../ModelPicker'
 import { Menu } from 'lucide-react'
 
 /** Props for {@link ChatLayout}. */
@@ -29,6 +30,7 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
             {sidebarProps.chats.length > 0 && <span className="font-semibold">Chat</span>}
           </div>
           <div className="flex items-center gap-2">
+            <ModelPicker />
             <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
