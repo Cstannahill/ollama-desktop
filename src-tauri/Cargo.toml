@@ -35,6 +35,8 @@ pdf-extract = "0.9"
 docx = "1"
 tiktoken-rs = "0.5"
 tokio-stream = "0.1"
+tokio = { version = "1", features = ["fs"] }
+path-clean = "0.1"
 
 [patch.crates-io]
 jetscii = { path = "../patches/jetscii" }

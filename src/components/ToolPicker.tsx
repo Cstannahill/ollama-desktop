@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import { invoke } from "@tauri-apps/api/core";
 import { useChatStore } from "../stores/chatStore";
+import { usePermissionStore } from "../stores/permissionStore";
 
 export type ToolMeta = {
   name: string;
@@ -8,11 +9,15 @@ export type ToolMeta = {
   json_schema: any;
 };
 
-// TODO: per-thread tool-permission modal
 
 export default function ToolPicker() {
   const { enabledTools, toggleTool } = useChatStore();
-  const { data, mutate } = useSWR<ToolMeta[]>("tools", () => invoke("list_tools"));
+  const { requestPermission, allowedToolsByThread, currentThreadId } =
+    usePermissionStore();
+  const { data, mutate } = useSWR<ToolMeta[]>(
+    "tools",
+    () => invoke("list_tools") as Promise<ToolMeta[]>
+  );
 
   return (
     <div className="flex items-center gap-2">
@@ -22,8 +27,15 @@ export default function ToolPicker() {
             type="checkbox"
             checked={enabledTools.includes(t.name)}
             onChange={() => {
-              toggleTool(t.name);
-              mutate();
+              if (
+                enabledTools.includes(t.name) ||
+                allowedToolsByThread[currentThreadId]?.includes(t.name)
+              ) {
+                toggleTool(t.name);
+                mutate();
+              } else {
+                requestPermission(t.name);
+              }
             }}
           />
           {t.name}

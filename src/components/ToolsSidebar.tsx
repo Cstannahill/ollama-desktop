@@ -2,6 +2,8 @@ import { useChatStore } from "../stores/chatStore";
 
 const tools = ["Web Search", "File Read", "Code Exec"];
 
+// TODO: per-file RAG weighting UI
+
 export default function ToolsSidebar() {
   const { ragEnabled, toggleRag } = useChatStore();
   return (
