@@ -16,24 +16,31 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
         (mime::APPLICATION, "vnd.openxmlformats-officedocument.wordprocessingml.document") => {
             use docx::document::BodyContent;
             use docx::DocxFile;
-            match DocxFile::from_file(&path).and_then(|f| f.parse()) {
-                Ok(doc) => doc
-                    .document
-                    .body
-                    .content
-                    .iter()
-                    .filter_map(|c| match c {
-                        BodyContent::Paragraph(p) => Some(
-                            p.iter_text()
-                                .map(|s| s.as_ref())
-                                .collect::<String>()
-                        ),
-                        _ => None,
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n"),
+
+            match DocxFile::from_file(&path) {
+                Ok(f) => match f.parse() {
+                    Ok(doc) => doc
+                        .document
+                        .body
+                        .content
+                        .iter()
+                        .filter_map(|c| match c {
+                            BodyContent::Paragraph(p) => Some(
+                                p.iter_text()
+                                    .map(|s| s.as_ref())
+                                    .collect::<String>(),
+                            ),
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                    Err(_) => {
+                        eprintln!("Failed to parse DOCX: {}", path.display());
+                        String::new()
+                    }
+                },
                 Err(_) => {
-                    eprintln!("Failed to parse DOCX: {}", path.display());
+                    eprintln!("Failed to open DOCX: {}", path.display());
                     String::new()
                 }
             }
