@@ -15,9 +15,9 @@ export function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Open Settings</Button>
+        <Button variant="outline" aria-label="Settings">Open Settings</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>

@@ -55,7 +55,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-dropdown bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-dropdown bg-black/50 dark:bg-black/60",
         className
       )}
       {...props}
@@ -71,10 +71,13 @@ function DialogContent({
 }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 z-40" />
+      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/60 z-40" />
 
       <DialogPrimitive.Content
-        className={cn("fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 shadow-lg z-50", className)}
+        className={cn(
+          "fixed left-1/2 top-1/2 z-50 w-3/4 max-h-[75vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg bg-background text-foreground p-6 shadow-lg",
+          className
+        )}
         {...props}
       >
         {showCloseButton && (
@@ -122,7 +125,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn("text-lg leading-none font-semibold text-foreground", className)}
       {...props}
     />
   )
