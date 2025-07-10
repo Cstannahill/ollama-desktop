@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+
+// Clear any persisted permissions from previous versions
+if (typeof localStorage !== "undefined") {
+  localStorage.removeItem("permissions")
+}
 
 interface PermState {
   allowedToolsByThread: Record<string, string[]>;
@@ -12,8 +16,7 @@ interface PermState {
 }
 
 export const usePermissionStore = create<PermState>()(
-  persist(
-    (set) => ({
+  (set) => ({
       allowedToolsByThread: {},
       currentThreadId: "",
       pendingTool: null,
@@ -32,7 +35,5 @@ export const usePermissionStore = create<PermState>()(
         }),
       denyPermission: () => set({ pendingTool: null }),
       setThreadId: (id) => set({ currentThreadId: id }),
-    }),
-    { name: "permissions" }
-  )
+    })
 );
