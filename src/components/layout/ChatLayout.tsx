@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar'
 import { ScrollArea } from '@/components/ui'
 import ModelPicker from '../ModelPicker'
 import { SettingsDialog } from '@/components/SettingsDialog'
+import ToolStatusIndicator from '../ToolStatusIndicator'
 
 /** Props for {@link ChatLayout}. */
 export interface ChatLayoutProps {
@@ -28,6 +29,7 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
           </div>
           <div className="flex items-center gap-2">
             <ModelPicker />
+            <ToolStatusIndicator />
             <SettingsDialog />
           </div>
         </div>

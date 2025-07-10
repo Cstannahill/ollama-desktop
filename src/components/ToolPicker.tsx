@@ -7,6 +7,23 @@ import { useChatStore } from "../stores/chatStore"
 import { usePermissionStore } from "../stores/permissionStore"
 
 export type ToolMeta = {
+  name: string;
+  description: string;
+  json_schema: any;
+};
+
+
+export default function ToolPicker() {
+  const { enabledTools, toggleTool } = useChatStore();
+  const { requestPermission, allowedToolsByThread, currentThreadId } =
+    usePermissionStore();
+  const { data, mutate } = useSWR<ToolMeta[]>(
+    "tools",
+    () => invoke("list_tools") as Promise<ToolMeta[]>
+  );
+
+  const basic = data?.filter((t) => t.name !== "shell_exec") || [];
+  const exec = data?.find((t) => t.name === "shell_exec");
   name: string
   description: string
   json_schema: any
