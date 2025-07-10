@@ -1,9 +1,16 @@
-// ToolPicker.tsx
-import React, { useCallback } from 'react'
-import { useTools } from '@/hooks/useTools'
-import { useChatStore } from '../stores/chatStore'
-import { usePermissionStore } from '../stores/permissionStore'
-import { ToolMeta } from '@/hooks/useTools'
+
+import useSWR from "swr"
+import { invoke } from "@tauri-apps/api/core"
+import { ScrollArea, Separator, Switch } from '@/components/ui'
+import { useChatStore } from "../stores/chatStore"
+import { usePermissionStore } from "../stores/permissionStore"
+
+export type ToolMeta = {
+  name: string;
+  description: string;
+  json_schema: any;
+};
+
 
 function ToolCheckbox({
   tool,
@@ -39,6 +46,42 @@ export default function ToolPicker() {
     (name: string) => {
       const isEnabled = enabledTools.includes(name)
       const isAllowed = allowedToolsByThread[currentThreadId]?.includes(name)
+
+  const renderTool = (t: ToolMeta, label?: string) => (
+    <div key={t.name} className="flex items-center justify-between gap-2">
+      <span>{label || t.name}</span>
+      <Switch
+        checked={enabledTools.includes(t.name)}
+        onCheckedChange={() => {
+          if (
+            enabledTools.includes(t.name) ||
+            allowedToolsByThread[currentThreadId]?.includes(t.name)
+          ) {
+            toggleTool(t.name)
+            mutate()
+          } else {
+            requestPermission(t.name)
+          }
+        }}
+      />
+    </div>
+  )
+
+  return (
+    <ScrollArea className="h-48 w-full pr-2">
+      <div className="flex flex-col gap-2 p-1">
+        {basic.map((t) => renderTool(t))}
+        {exec && (
+          <>
+            <Separator className="my-2" />
+            <div>
+              <h4 className="text-sm font-bold mb-1">Advanced Tools</h4>
+              {renderTool(exec, "⚠ shell_exec (risky)")}
+            </div>
+          </>
+        )}
+      </div>
+    </ScrollArea>
 
       if (isEnabled || isAllowed) {
         toggleTool(name)
