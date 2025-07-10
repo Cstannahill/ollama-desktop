@@ -45,8 +45,9 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
     let total = chunks.len();
     for (i, chunk) in chunks.into_iter().enumerate() {
         let embedding = embeddings::embed(&chunk).await?;
+        let vid = Uuid::new_v4().to_string();
         vector_db::upsert(
-            &Uuid::new_v4().to_string(),
+            &vid,
             embedding,
             json!({
                 "text": chunk,
@@ -55,9 +56,11 @@ pub async fn ingest(path: PathBuf, thread_id: Uuid) -> Result<()> {
                 "chunk_index": i,
                 "total_chunks": total,
                 "thread_id": thread_id,
+                "weight": 1.0,
             }),
         )
         .await?;
+        crate::db::insert_vector(&vid, &thread_id.to_string()).await?;
     }
     Ok(())
 }

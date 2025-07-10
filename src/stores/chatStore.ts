@@ -60,7 +60,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       (e) => {
         set((s) => {
           const idx = s.messages.findIndex((m) => m.id === assistantId);
-          const msgs = [...s.messages];
+          let msgs = [...s.messages];
           if (toolMsgId) {
             msgs = msgs.map((m) =>
               m.id === toolMsgId ? { ...m, text: e.payload.content, name: e.payload.name } : m
@@ -83,7 +83,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (!toolMsgId) {
         set((s) => {
           const idx = s.messages.findIndex((m) => m.id === assistantId);
-          const msgs = [...s.messages];
+          let msgs = [...s.messages];
           toolMsgId = crypto.randomUUID();
           msgs.splice(idx, 0, { id: toolMsgId, role: "tool", text: e.payload, name: "shell_exec" });
           return { messages: msgs };

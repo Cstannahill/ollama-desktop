@@ -15,6 +15,7 @@ mod rag;
 mod tool;
 mod vector_db;
 mod web_search;
+mod db;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -52,6 +53,9 @@ async fn generate_chat(
     thread_id: String,
 ) -> Result<(), String> {
     let mut system_prompt = String::new();
+    let id = thread_id
+        .parse()
+        .map_err(|e| format!("invalid thread id: {e}"))?;
     {
         let map = tool::registry().read().unwrap();
         system_prompt.push_str("| tool | description |\n| --- | --- |\n");
@@ -61,12 +65,10 @@ async fn generate_chat(
     }
     system_prompt.push_str("The workspace directory is a sandbox. Use file_write only for plain-text.\nNEVER overwrite binary files.\n");
     if rag_enabled {
-        if let Ok(ctx) = rag::query(&prompt, 4).await {
+        let (top_k, ctx_tok) = db::get_thread_settings(&thread_id).await.unwrap_or((4,1024));
+        if let Ok(ctx) = rag::retrieve_context(&prompt, &id, top_k, ctx_tok as usize).await {
             if !ctx.is_empty() {
-                system_prompt.push_str(&format!(
-                    "Use the following context to answer the user:\n{}",
-                    ctx.join("\n---\n")
-                ));
+                system_prompt.push_str(&ctx);
             }
         }
     }
@@ -224,6 +226,24 @@ async fn attach_file(window: tauri::Window, path: String, thread_id: String) -> 
     }
 }
 
+#[tauri::command]
+async fn set_vector_weight(vector_id: String, weight: f32) -> Result<(), String> {
+    vector_db::set_weight(&vector_id, weight)
+        .await
+        .map_err(|e| e.to_string())?;
+    db::update_weight(&vector_id, weight)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn update_thread_settings(thread_id: String, top_k: u8, ctx_tokens: u16) -> Result<(), String> {
+    db::set_thread_settings(&thread_id, top_k, ctx_tokens)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 // TODO: mobile build targets
 pub fn run() {
@@ -235,6 +255,8 @@ pub fn run() {
             list_tools,
             generate_chat,
             attach_file,
+            set_vector_weight,
+            update_thread_settings,
             audit_log::get_audit_log
         ])
         .run(tauri::generate_context!())

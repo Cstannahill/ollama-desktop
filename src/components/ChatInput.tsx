@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../stores/chatStore";
 import { usePermissionStore } from "../stores/permissionStore";
 import AttachmentDropZone, { PendingAttachment } from "./AttachmentDropZone";
+import AttachmentTile from "./AttachmentTile";
 
 export default function ChatInput() {
   const [text, setText] = useState("");
@@ -50,9 +51,7 @@ export default function ChatInput() {
       </button>
       <div className="flex gap-2">
         {attachments.map((a) => (
-          <span key={a.name} className="text-sm">
-            📄 {a.name} • {a.status}
-          </span>
+          <AttachmentTile key={a.name} id={a.name} name={`${a.name} • ${a.status}`} />
         ))}
       </div>
       <AttachmentDropZone

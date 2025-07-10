@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS message_vectors(
+  id TEXT PRIMARY KEY,
+  thread_id TEXT NOT NULL,
+  weight REAL NOT NULL DEFAULT 1.0
+);
+ALTER TABLE message_vectors ADD COLUMN weight REAL NOT NULL DEFAULT 1.0;
+CREATE TABLE IF NOT EXISTS thread_settings(
+  thread_id TEXT PRIMARY KEY,
+  top_k INTEGER NOT NULL DEFAULT 4,
+  ctx_tokens INTEGER NOT NULL DEFAULT 1024
+);

@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { useChatStore } from "../stores/chatStore";
+import AttachmentTile from "./AttachmentTile";
 
 export default function ChatPane() {
   const { messages } = useChatStore();
@@ -37,9 +38,7 @@ export default function ChatPane() {
           {msg.attachments && msg.attachments.length > 0 && (
             <div className="flex gap-2 justify-end">
               {msg.attachments.map((a) => (
-                <span key={a.name} className="text-xs">
-                  📄 {a.name} • {a.status}
-                </span>
+                <AttachmentTile key={a.name} id={a.name} name={`${a.name} • ${a.status}`} />
               ))}
             </div>
           )}
