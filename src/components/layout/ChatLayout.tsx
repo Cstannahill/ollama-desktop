@@ -22,7 +22,7 @@ export interface ChatLayoutProps {
 export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
   const [toolsOpen, setToolsOpen] = useState(false)
   return (
-    <div className="flex h-screen bg-bg-app text-white">
+    <div className="flex h-screen bg-bg-app text-foreground">
       <Sidebar {...sidebarProps} />
       <div className="relative flex flex-col flex-1">
         <div className="sticky top-0 z-10 flex items-center justify-between bg-bg-app p-2 border-b border-white/10">
@@ -43,7 +43,7 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
             </Sheet>
           </div>
         </div>
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-h-0">
           <ScrollArea
             className="h-full p-4 overflow-y-auto overscroll-contain scroll-smooth"
             id="chat-scroll"
