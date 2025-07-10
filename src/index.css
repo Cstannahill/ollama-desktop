@@ -44,7 +44,6 @@
   --border: hsl(240 5% 90%);
   --input: hsl(240 5% 90%);
   --ring: hsl(243 75% 59%);
-  --switch-accent: hsl(0 0% 75%);
   --chart-1: hsl(340 82% 52%);
   --chart-2: hsl(210 90% 50%);
   --chart-3: hsl(48 100% 50%);
@@ -211,7 +210,6 @@ button {
   --border: hsl(215 20% 20%);
   --input: hsl(215 20% 25%);
   --ring: hsl(262 80% 75%);
-  --switch-accent: hsl(0 0% 60%);
   --chart-1: hsl(340 82% 52%);
   --chart-2: hsl(210 90% 60%);
   --chart-3: hsl(48 100% 50%);
@@ -236,6 +234,6 @@ button {
   }
 }
 
-body[data-radix-dialog-open] {
+/* body[data-radix-dialog-open] {
   pointer-events: auto !important;
-}
+} */

@@ -1,3 +1,4 @@
+import React from 'react'
 import ToolPicker from '@/components/ToolPicker'
 import { Button } from '@/components/ui'
 import {
@@ -15,9 +16,11 @@ export function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" aria-label="Settings">Open Settings</Button>
+        <Button variant="outline" aria-label="Settings">
+          Open Settings
+        </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md" showCloseButton={false}>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
@@ -31,9 +34,8 @@ export function SettingsDialog() {
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

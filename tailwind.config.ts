@@ -14,7 +14,6 @@ export default {
         'bg-primary': 'var(--c-bg-primary)',
         'bg-surface': 'var(--c-bg-surface)',
         accent: 'var(--c-accent)',
-        switch: 'var(--switch-accent)',
         brand: {
           50: 'var(--brand-50)',
           100: 'var(--brand-100)',
