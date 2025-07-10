@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 import { ScrollArea } from '@/components/ui'
 import ModelPicker from '../ModelPicker'
-import SettingsDialog from '../SettingsDialog'
+import { SettingsDialog } from '@/components/SettingsDialog'
 
 /** Props for {@link ChatLayout}. */
 export interface ChatLayoutProps {

@@ -1,59 +1,90 @@
-import useSWR from "swr";
-import { invoke } from "@tauri-apps/api/core";
-import { useChatStore } from "../stores/chatStore";
-import { usePermissionStore } from "../stores/permissionStore";
+// ToolPicker.tsx
+import React, { useCallback } from 'react'
+import { useTools } from '@/hooks/useTools'
+import { useChatStore } from '../stores/chatStore'
+import { usePermissionStore } from '../stores/permissionStore'
+import { ToolMeta } from '@/hooks/useTools'
 
-export type ToolMeta = {
-  name: string;
-  description: string;
-  json_schema: any;
-};
-
-
-export default function ToolPicker() {
-  const { enabledTools, toggleTool } = useChatStore();
-  const { requestPermission, allowedToolsByThread, currentThreadId } =
-    usePermissionStore();
-  const { data, mutate } = useSWR<ToolMeta[]>(
-    "tools",
-    () => invoke("list_tools") as Promise<ToolMeta[]>
-  );
-
-  const basic = data?.filter((t) => t.name !== "shell_exec") || [];
-  const exec = data?.find((t) => t.name === "shell_exec");
-
-  const renderTool = (t: ToolMeta, label?: string) => (
-    <label key={t.name} className="flex items-center gap-1">
+function ToolCheckbox({
+  tool,
+  label,
+  onToggle,
+  isChecked,
+}: {
+  tool: ToolMeta
+  label?: string
+  onToggle: (name: string) => void
+  isChecked: boolean
+}) {
+  return (
+    <label className="flex items-center gap-2">
       <input
         type="checkbox"
-        checked={enabledTools.includes(t.name)}
-        onChange={() => {
-          if (
-            enabledTools.includes(t.name) ||
-            allowedToolsByThread[currentThreadId]?.includes(t.name)
-          ) {
-            toggleTool(t.name);
-            mutate();
-          } else {
-            requestPermission(t.name);
-          }
-        }}
+        checked={isChecked}
+        onChange={() => onToggle(tool.name)}
+        className="form-checkbox h-4 w-4"
       />
-      {label || t.name}
+      <span className="select-none">{label ?? tool.name}</span>
     </label>
-  );
+  )
+}
+
+export default function ToolPicker() {
+  const { data: tools, error, isLoading, mutate } = useTools()
+  const { enabledTools, toggleTool } = useChatStore()
+  const { requestPermission, allowedToolsByThread, currentThreadId } =
+    usePermissionStore()
+
+  const handleToggle = useCallback(
+    (name: string) => {
+      const isEnabled = enabledTools.includes(name)
+      const isAllowed = allowedToolsByThread[currentThreadId]?.includes(name)
+
+      if (isEnabled || isAllowed) {
+        toggleTool(name)
+        mutate() // refresh tool list or states if needed
+      } else {
+        requestPermission(name)
+      }
+    },
+    [enabledTools, allowedToolsByThread, currentThreadId, toggleTool, requestPermission, mutate]
+  )
+
+  if (isLoading) {
+    return <div className="py-4 text-center text-sm text-gray-500">Loading tools…</div>
+  }
+
+  if (error) {
+    return <div className="py-4 text-center text-sm text-red-600">Failed to load tools</div>
+  }
+
+  const basicTools = tools!.filter((t) => t.name !== 'shell_exec')
+  const execTool = tools!.find((t) => t.name === 'shell_exec')
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        {basic.map((t) => renderTool(t))}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-3">
+        {basicTools.map((tool) => (
+          <ToolCheckbox
+            key={tool.name}
+            tool={tool}
+            isChecked={enabledTools.includes(tool.name)}
+            onToggle={handleToggle}
+          />
+        ))}
       </div>
-      {exec && (
-        <div className="mt-2">
-          <h4 className="text-sm font-bold mb-1">Advanced Tools</h4>
-          {renderTool(exec, "⚠ shell_exec (risky)")}
+
+      {execTool && (
+        <div className="pt-4 border-t">
+          <h4 className="text-sm font-bold mb-2">Advanced Tools</h4>
+          <ToolCheckbox
+            tool={execTool}
+            label="⚠ shell_exec (risky)"
+            isChecked={enabledTools.includes(execTool.name)}
+            onToggle={handleToggle}
+          />
         </div>
       )}
     </div>
-  );
+  )
 }
