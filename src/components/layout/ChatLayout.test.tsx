@@ -5,7 +5,7 @@ import '@testing-library/jest-dom'
 
 const sidebarProps = { chats: [], onNewChat: () => {}, onSelectChat: () => {} }
 
-test('tool drawer opens and closes', () => {
+test('settings dialog opens and closes', () => {
   render(
     <ThemeProvider>
       <ChatLayout sidebarProps={sidebarProps} input={<div>input</div>}>
@@ -13,10 +13,10 @@ test('tool drawer opens and closes', () => {
       </ChatLayout>
     </ThemeProvider>
   )
-  const trigger = screen.getByRole('button', { name: 'Tools' })
+  const trigger = screen.getByRole('button', { name: 'Settings' })
   fireEvent.click(trigger)
-  expect(screen.getByText('Tools')).toBeInTheDocument()
+  expect(screen.getByText('Settings')).toBeInTheDocument()
   const close = screen.getByRole('button', { name: /close/i })
   fireEvent.click(close)
-  expect(screen.queryByText('Tools')).not.toBeInTheDocument()
+  expect(screen.queryByText('Settings')).not.toBeInTheDocument()
 })

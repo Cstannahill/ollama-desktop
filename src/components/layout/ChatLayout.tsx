@@ -1,11 +1,8 @@
-import { ReactNode, useState } from 'react'
-import { Sheet, SheetContent, SheetTrigger, Button } from '@/components/ui'
+import { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 import { ScrollArea } from '@/components/ui'
-import ToolPicker from '../ToolPicker'
-import { SheetHeader, SheetTitle, SheetClose } from '@/components/ui'
 import ModelPicker from '../ModelPicker'
-import { Menu } from 'lucide-react'
+import SettingsDialog from '../SettingsDialog'
 
 /** Props for {@link ChatLayout}. */
 export interface ChatLayoutProps {
@@ -18,10 +15,9 @@ export interface ChatLayoutProps {
 }
 
 /**
- * Main application shell combining sidebar, message stream and tool drawer.
- */
+ * Main application shell combining sidebar, message stream and settings dialog.
+*/
 export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
-  const [toolsOpen, setToolsOpen] = useState(false)
   return (
     <div className="flex h-screen bg-bg-app text-foreground">
       <Sidebar {...sidebarProps} />
@@ -32,22 +28,7 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
           </div>
           <div className="flex items-center gap-2">
             <ModelPicker />
-            <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Tools">
-                  <Menu className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80">
-                <SheetHeader className="border-b">
-                  <SheetTitle>Tools</SheetTitle>
-                  <SheetClose />
-                </SheetHeader>
-                <div className="p-4">
-                  <ToolPicker />
-                </div>
-              </SheetContent>
-            </Sheet>
+            <SettingsDialog />
           </div>
         </div>
         <div className="relative flex-1 min-h-0">
