@@ -2,7 +2,8 @@ import { ReactNode, useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger, Button } from '@/components/ui'
 import { Sidebar } from './Sidebar'
 import { ScrollArea } from '@/components/ui'
-import { ToolList } from '../tools/ToolList'
+import ToolPicker from '../ToolPicker'
+import { SheetHeader, SheetTitle, SheetClose } from '@/components/ui'
 import ModelPicker from '../ModelPicker'
 import { Menu } from 'lucide-react'
 
@@ -33,12 +34,18 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
             <ModelPicker />
             <Sheet open={toolsOpen} onOpenChange={setToolsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label="Tools">
                   <Menu className="size-4" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
-                <ToolList />
+                <SheetHeader className="border-b">
+                  <SheetTitle>Tools</SheetTitle>
+                  <SheetClose />
+                </SheetHeader>
+                <div className="p-4">
+                  <ToolPicker />
+                </div>
               </SheetContent>
             </Sheet>
           </div>
