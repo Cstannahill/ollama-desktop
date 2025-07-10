@@ -1,7 +1,8 @@
 use async_trait::async_trait;
-use serde_json::Value;
+use serde_json::{Value, json};
 use tokio::{process::Command, io::{AsyncReadExt, BufReader}, time::timeout};
 use anyhow::Context;
+use tauri::Emitter;
 
 const CMD_TIMEOUT_SECS: u64 = 5;
 const OUTPUT_LIMIT_BYTES: usize = 30 * 1024; // 30 KB
@@ -65,7 +66,7 @@ impl crate::tool::Tool for ShellExecTool {
             Ok::<(), anyhow::Error>(())
         };
         if timeout(std::time::Duration::from_secs(CMD_TIMEOUT_SECS), join).await.is_err() {
-            child.kill().ok();
+            let _ = child.kill().await;
             anyhow::bail!("Command timed out");
         }
         let text = String::from_utf8_lossy(&out);
