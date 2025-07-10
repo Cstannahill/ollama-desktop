@@ -1,23 +1,38 @@
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
+import ToolPicker from '@/components/ToolPicker'
 import { Button } from '@/components/ui'
-import ToolPicker from './ToolPicker'
-import { Cog } from 'lucide-react'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
-export default function SettingsDialog() {
+export function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Settings">
-          <Cog className="size-4" />
-        </Button>
+        <Button variant="outline">Open Settings</Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader className="border-b pb-2">
+      <DialogContent className="max-w-md">
+        <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
+          <DialogDescription>
+            Adjust your preferences below.
+          </DialogDescription>
         </DialogHeader>
-        <div className="pt-2">
+        <div className="space-y-4">
           <ToolPicker />
         </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
+
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

@@ -234,3 +234,6 @@ button {
   }
 }
 
+body[data-radix-dialog-open] {
+  pointer-events: auto !important;
+}
