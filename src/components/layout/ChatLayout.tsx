@@ -9,14 +9,16 @@ import { Menu } from 'lucide-react'
 export interface ChatLayoutProps {
   /** Sidebar configuration. */
   sidebarProps: React.ComponentProps<typeof Sidebar>
-  /** Chat content nodes. */
+  /** Chat content nodes (message bubbles). */
   children: ReactNode
+  /** Input element rendered at the bottom. */
+  input: ReactNode
 }
 
 /**
  * Main application shell combining sidebar, message stream and tool drawer.
  */
-export function ChatLayout({ sidebarProps, children }: ChatLayoutProps) {
+export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
   const [toolsOpen, setToolsOpen] = useState(false)
   return (
     <div className="flex h-screen bg-bg-app text-white">
@@ -39,13 +41,16 @@ export function ChatLayout({ sidebarProps, children }: ChatLayoutProps) {
             </Sheet>
           </div>
         </div>
-        <ScrollArea
-          className="flex-1 p-4 overflow-y-auto overscroll-contain scroll-smooth"
-          id="chat-scroll"
-        >
-          {children}
-        </ScrollArea>
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg-app to-transparent" />
+        <div className="relative flex-1">
+          <ScrollArea
+            className="h-full p-4 overflow-y-auto overscroll-contain scroll-smooth"
+            id="chat-scroll"
+          >
+            {children}
+          </ScrollArea>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg-app to-transparent" />
+        </div>
+        <div className="border-t border-white/10 p-2">{input}</div>
       </div>
     </div>
   )
