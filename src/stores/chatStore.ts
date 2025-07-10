@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { usePermissionStore } from "./permissionStore";
 
 export type Attachment = { name: string; mime: string; status: "processing" | "ready" | "error" };
 
@@ -14,7 +15,12 @@ interface ChatState {
   toggleRag: () => void;
   enabledTools: string[];
   toggleTool: (name: string) => void;
-  send: (text: string, attachments: Attachment[]) => Promise<void>;
+  send: (
+    text: string,
+    attachments: Attachment[],
+    threadId: string,
+    allowedTools: string[]
+  ) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -29,7 +35,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const has = s.enabledTools.includes(name);
       return { enabledTools: has ? s.enabledTools.filter((t) => t !== name) : [...s.enabledTools, name] };
     }),
-  send: async (text: string, attachments: Attachment[]) => {
+  send: async (
+    text: string,
+    attachments: Attachment[],
+    threadId: string,
+    allowedTools: string[]
+  ) => {
     const user: Message = { id: crypto.randomUUID(), role: "user", text, attachments };
     const assistant: Message = { id: crypto.randomUUID(), role: "assistant", text: "" };
     set((state) => ({ messages: [...state.messages, user, assistant] }));
@@ -69,10 +80,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
         prompt: text,
         ragEnabled: get().ragEnabled,
         enabledTools: get().enabledTools,
+        allowedTools,
+        threadId,
       });
       await done;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      try {
+        const err = JSON.parse(e);
+        if (err.code === "NeedPermission") {
+          usePermissionStore.getState().requestPermission(err.tool);
+        }
+      } catch {}
     } finally {
       unlistenToken();
       unlistenTool();

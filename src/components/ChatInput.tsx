@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../stores/chatStore";
+import { usePermissionStore } from "../stores/permissionStore";
 import AttachmentDropZone, { PendingAttachment } from "./AttachmentDropZone";
 
 export default function ChatInput() {
@@ -7,6 +8,11 @@ export default function ChatInput() {
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const threadIdRef = useRef(crypto.randomUUID());
   const { send, currentModel } = useChatStore();
+  const { allowedToolsByThread, setThreadId } = usePermissionStore();
+
+  useEffect(() => {
+    setThreadId(threadIdRef.current);
+  }, [setThreadId]);
 
   const handle = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,10 +21,16 @@ export default function ChatInput() {
       alert("Pick a model first");
       return;
     }
-    await send(text, attachments);
+    await send(
+      text,
+      attachments,
+      threadIdRef.current,
+      allowedToolsByThread[threadIdRef.current] || []
+    );
     setText("");
     setAttachments([]);
     threadIdRef.current = crypto.randomUUID();
+    setThreadId(threadIdRef.current);
   };
 
   return (
