@@ -52,16 +52,16 @@ export default function ToolPicker() {
 
   const renderSwitch = (t: ToolMeta, label?: string) => {
     const isChecked = enabledTools.includes(t.name)
-    const isDisabled =
-      !isChecked && !allowedToolsByThread[currentThreadId]?.includes(t.name)
+    const hasPermission = allowedToolsByThread[currentThreadId]?.includes(t.name)
 
     return (
       <div key={t.name} className="flex items-center justify-between gap-2">
         <span>{label || t.name}</span>
         <Switch
           checked={isChecked}
-          disabled={isDisabled}
           onCheckedChange={handleToggle(t)}
+          disabled={false}
+          aria-disabled={!hasPermission && !isChecked}
         />
       </div>
     )
