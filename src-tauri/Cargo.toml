@@ -39,6 +39,7 @@ tokio = { version = "1", features = ["fs", "process", "time", "io-util"] }
 bytesize = "1"
 path-clean = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
+glib-sys = "0.20.10"
 
 [patch.crates-io]
 jetscii = { path = "../patches/jetscii" }
