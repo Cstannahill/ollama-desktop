@@ -11,10 +11,10 @@ export default function ToolPermissionModal() {
   const [ack, setAck] = React.useState(false);
   if (!pendingTool) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded shadow w-80">
-        <h2 className="font-bold mb-2">Allow tool: {pendingTool}</h2>
-        <p className="mb-2 text-sm">{tool?.description}</p>
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-background text-foreground p-4 rounded shadow w-80">
+        <h2 className="font-bold mb-2 text-foreground">Allow tool: {pendingTool}</h2>
+        <p className="mb-2 text-sm text-muted-foreground">{tool?.description}</p>
         <p className="text-sm mb-4">
           This tool can read or write files on your machine inside the workspace directory.
         </p>
