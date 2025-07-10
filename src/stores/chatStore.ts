@@ -144,12 +144,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
 
     try {
+      const permState = usePermissionStore.getState();
+      const allowedTools =
+        permState.allowedToolsByThread[threadId] || [];
+
       await invoke("generate_chat", {
         model: get().currentModel,
         prompt: text,
         ragEnabled: get().ragEnabled,
         enabledTools: get().enabledTools,
-        allowedTools: [],
+        allowedTools,
         threadId,
       });
       await done;
