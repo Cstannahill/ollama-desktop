@@ -30,7 +30,7 @@ impl crate::tool::Tool for FileReadTool {
           "required":["path"]
         })
     }
-    async fn call(&self, args: Value) -> anyhow::Result<String> {
+    async fn call(&self, _window: &tauri::Window, args: Value) -> anyhow::Result<String> {
         let rel = args["path"].as_str().context("missing path")?;
         let abs = safe_path(rel)?;
         let data = fs::read_to_string(&abs)
@@ -65,7 +65,7 @@ impl crate::tool::Tool for FileWriteTool {
           "required":["path","content"]
         })
     }
-    async fn call(&self, args: Value) -> anyhow::Result<String> {
+    async fn call(&self, _window: &tauri::Window, args: Value) -> anyhow::Result<String> {
         let rel = args["path"].as_str().context("missing path")?;
         let content = args["content"].as_str().context("missing content")?;
         let mode = args["mode"].as_str().unwrap_or("overwrite");

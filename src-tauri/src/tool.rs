@@ -4,6 +4,7 @@ use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
+use tauri::Window;
 
 use crate::web_search::WebSearchTool;
 
@@ -12,7 +13,7 @@ pub trait Tool: Send + Sync {
     fn name(&self) -> &'static str;
     fn description(&self) -> &'static str;
     fn json_schema(&self) -> Value;
-    async fn call(&self, args: Value) -> anyhow::Result<String>;
+    async fn call(&self, window: &Window, args: Value) -> anyhow::Result<String>;
 }
 
 #[derive(Serialize)]
@@ -38,7 +39,10 @@ pub fn registry() -> &'static RwLock<HashMap<&'static str, Arc<dyn Tool + Send +
                 "file_write",
                 Arc::new(crate::file_tools::FileWriteTool) as Arc<dyn Tool + Send + Sync>,
             );
-            // TODO: shell_exec tool (limited commands, timeout, permission)
+            map.insert(
+                "shell_exec",
+                Arc::new(crate::shell_exec::ShellExecTool) as Arc<dyn Tool + Send + Sync>,
+            );
             RwLock::new(map)
         });
     &REG

@@ -19,7 +19,7 @@ impl Tool for WebSearchTool {
         })
     }
 
-    async fn call(&self, args: Value) -> anyhow::Result<String> {
+    async fn call(&self, _window: &tauri::Window, args: Value) -> anyhow::Result<String> {
         let q = args.get("query").and_then(|v| v.as_str()).unwrap_or_default();
         if q.len() > 200 {
             anyhow::bail!("query too long");

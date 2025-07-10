@@ -8,7 +8,10 @@ export default function ChatPane() {
     <div className="flex-1 overflow-y-auto my-2">
       {messages.map((msg) => (
         <div key={msg.id} className={msg.role === "user" ? "text-right" : "text-left"}>
-          {msg.role === "tool" && (
+          {msg.role === "tool" && msg.name === "shell_exec" && (
+            <pre className="bg-blue-50 text-sm p-2 rounded mb-1 whitespace-pre-wrap">{msg.text}</pre>
+          )}
+          {msg.role === "tool" && msg.name !== "shell_exec" && (
             <div className="bg-blue-50 text-sm p-2 rounded mb-1">🔧 {msg.text}</div>
           )}
           {msg.role !== "tool" && (
