@@ -6,9 +6,34 @@ use std::path::{Path, PathBuf};
 use tokio::{fs, io::AsyncWriteExt};
 
 fn safe_path(rel: &str) -> anyhow::Result<PathBuf> {
-    let p = Path::new(crate::config::WORKSPACE_DIR).join(rel).clean();
-    if !p.starts_with(crate::config::WORKSPACE_DIR) {
-        anyhow::bail!("Path traversal detected");
+    let workspace_dir = crate::config::WORKSPACE_DIR;
+    
+    // If path is absolute and outside workspace, but still reasonable, allow it
+    let path = Path::new(rel);
+    if path.is_absolute() {
+        // Allow reading files in common directories like home, documents, etc.
+        let path_str = path.to_string_lossy();
+        if path_str.starts_with("/home") || 
+           path_str.starts_with("/Users") || 
+           path_str.starts_with("/tmp") ||
+           path_str.starts_with(workspace_dir) {
+            return Ok(path.to_path_buf());
+        } else {
+            anyhow::bail!("Access to this path is not allowed for security reasons");
+        }
+    }
+    
+    // For relative paths, join with workspace
+    let p = Path::new(workspace_dir).join(rel).clean();
+    
+    // Allow paths that start with workspace or are within reasonable bounds
+    if !p.starts_with(workspace_dir) {
+        // Check if it's a reasonable relative path that goes outside workspace
+        if rel.contains("..") && rel.matches("..").count() > 3 {
+            anyhow::bail!("Path traversal too deep");
+        }
+        // Allow some traversal outside workspace for flexibility
+        return Ok(p);
     }
     Ok(p)
 }

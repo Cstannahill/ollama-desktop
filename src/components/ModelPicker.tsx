@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import useSWR from "swr";
 import { invoke } from "@tauri-apps/api/core";
 import { useChatStore } from "../stores/chatStore";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 
 const fetcher = () => invoke<string[]>("list_models");
 
@@ -21,19 +22,23 @@ export default function ModelPicker() {
     return <div>No models found. Start Ollama.</div>;
 
   return (
-    <select
-      className="border-input bg-background text-black dark:text-black border rounded p-1"
+    <Select
       value={currentModel}
-      onChange={(e) => {
-        setModel(e.target.value)
+      onValueChange={(value) => {
+        setModel(value)
         toast('Model switched')
       }}
     >
-      {models.map((m) => (
-        <option key={m} value={m}>
-          {m}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className="w-[200px]">
+        <SelectValue placeholder="Select a model" />
+      </SelectTrigger>
+      <SelectContent>
+        {models.map((m) => (
+          <SelectItem key={m} value={m}>
+            {m}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

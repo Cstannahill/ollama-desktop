@@ -12,7 +12,7 @@ export interface SkeletonBubbleProps {
 export function SkeletonBubble({ className }: SkeletonBubbleProps = {}) {
   return (
     <div
-      className={cn('rounded-lg bg-white/10 animate-pulse h-8 w-32', className)}
+      className={cn('rounded-lg bg-muted/50 animate-pulse h-8 w-32', className)}
       data-testid="skeleton-bubble"
     />
   )

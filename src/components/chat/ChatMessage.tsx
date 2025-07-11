@@ -31,7 +31,7 @@ export function ChatMessage({ role, text }: ChatMessageProps) {
       {!isUser && (
         <Avatar>
           <AvatarImage asChild>
-            <span className="bg-accent text-black rounded-full size-8 flex items-center justify-center uppercase">
+            <span className="bg-accent text-accent-foreground rounded-full size-8 flex items-center justify-center uppercase">
               {role.charAt(0)}
             </span>
           </AvatarImage>
@@ -43,7 +43,7 @@ export function ChatMessage({ role, text }: ChatMessageProps) {
           {role}
         </Badge>
         <motion.div
-          className="prose prose-invert text-sm"
+          className="prose dark:prose-invert text-sm"
           style={{
             WebkitMaskImage: 'linear-gradient(90deg,#fff calc(var(--ch)*1ch),transparent 0)',
             '--ch': 0,

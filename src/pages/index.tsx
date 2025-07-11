@@ -5,8 +5,19 @@ import { ChatMessage, ChatInput, SkeletonBubble, MessageActions } from '@/compon
 import { useAutoScroll } from '@/lib/hooks/useAutoScroll'
 
 export default function IndexPage() {
-  const { messages, send, chats, newChat, selectChat } = useChatStore()
+  const { messages, send, chats, newChat, selectChat, loadChats, deleteChat, renameChat } = useChatStore()
   useAutoScroll(messages)
+
+  useEffect(() => {
+    // Load saved chats on startup
+    loadChats().then(() => {
+      // If no chats exist, create a new one
+      if (chats.length === 0) {
+        newChat()
+      }
+    })
+  }, [loadChats, newChat])
+
   useEffect(() => {
     if (chats.length === 0) {
       newChat()
@@ -19,6 +30,8 @@ export default function IndexPage() {
         chats: chats.map((c) => ({ id: c.id, title: c.title })),
         onNewChat: newChat,
         onSelectChat: selectChat,
+        onDeleteChat: deleteChat,
+        onRenameChat: renameChat,
       }}
       input={<ChatInput onSend={send} />}
     >

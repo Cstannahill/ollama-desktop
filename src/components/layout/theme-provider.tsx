@@ -31,6 +31,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement
     root.classList.remove('light', 'dark')
     root.classList.add(theme)
+
+    // Also update the data attribute for better CSS targeting
+    root.setAttribute('data-theme', theme)
   }, [theme])
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>

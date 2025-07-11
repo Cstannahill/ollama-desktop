@@ -68,7 +68,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }) {
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/60 z-40" />

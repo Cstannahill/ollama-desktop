@@ -20,10 +20,10 @@ export interface ChatLayoutProps {
 */
 export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
   return (
-    <div className="flex h-screen bg-bg-app text-foreground">
+    <div className="flex h-screen bg-background text-foreground">
       <Sidebar {...sidebarProps} />
       <div className="relative flex flex-col flex-1">
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-bg-app p-2 border-b border-white/10">
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-background p-2 border-b border-border">
           <div className="flex items-center gap-2">
             {sidebarProps.chats.length > 0 && <span className="font-semibold">Chat</span>}
           </div>
@@ -40,9 +40,9 @@ export function ChatLayout({ sidebarProps, children, input }: ChatLayoutProps) {
           >
             {children}
           </ScrollArea>
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg-app to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background to-transparent" />
         </div>
-        <div className="border-t border-white/10 p-2">{input}</div>
+        <div className="border-t border-border p-2">{input}</div>
       </div>
     </div>
   )
