@@ -1,3 +1,5 @@
 export * from './Sidebar'
+export * from './ProjectSidebar'
 export * from './ChatLayout'
+export * from './ProjectChatLayout'
 export * from './theme-provider'

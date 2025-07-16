@@ -12,6 +12,7 @@ export type Chat = {
   title: string; 
   threadId: string; 
   messages: Message[]; 
+  projectId?: string; // Optional project association
   createdAt?: string; 
   updatedAt?: string; 
 };
@@ -33,7 +34,7 @@ interface ChatState {
   toggleTool: (name: string) => void;
   chatStatus: ChatStatusType;
   setChatStatus: (status: ChatStatusType) => void;
-  newChat: () => void;
+  newChat: (projectId?: string) => void;
   selectChat: (id: string) => void;
   deleteChat: (id: string) => void;
   renameChat: (id: string, newTitle: string) => void;
@@ -58,7 +59,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const has = s.enabledTools.includes(name);
       return { enabledTools: has ? s.enabledTools.filter((t) => t !== name) : [...s.enabledTools, name] };
     }),
-  newChat: () => {
+  newChat: (projectId?: string) => {
     const id = crypto.randomUUID();
     const threadId = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -67,6 +68,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       title: "New Chat", 
       threadId, 
       messages: [], 
+      projectId,
       createdAt: now, 
       updatedAt: now 
     };

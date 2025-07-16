@@ -1,22 +1,24 @@
 import { useEffect } from 'react'
 import { useChatStore } from '@/stores/chatStore'
-import { ChatLayout } from '@/components/layout'
+import { useProjectStore } from '@/stores/projectStore'
+import { ProjectChatLayout } from '@/components/layout'
 import { ChatMessage, ChatInput, SkeletonBubble, MessageActions } from '@/components/chat'
 import { useAutoScroll } from '@/lib/hooks/useAutoScroll'
 
 export default function IndexPage() {
-  const { messages, send, chats, newChat, selectChat, loadChats, deleteChat, renameChat } = useChatStore()
+  const { messages, send, chats, currentChatId, newChat, selectChat, loadChats, deleteChat, renameChat } = useChatStore()
+  const { loadProjects } = useProjectStore()
   useAutoScroll(messages)
 
   useEffect(() => {
-    // Load saved chats on startup
-    loadChats().then(() => {
+    // Load projects and chats on startup
+    Promise.all([loadProjects(), loadChats()]).then(() => {
       // If no chats exist, create a new one
       if (chats.length === 0) {
         newChat()
       }
     })
-  }, [loadChats, newChat])
+  }, [loadProjects, loadChats, newChat])
 
   useEffect(() => {
     if (chats.length === 0) {
@@ -25,9 +27,10 @@ export default function IndexPage() {
   }, [chats.length, newChat])
 
   return (
-    <ChatLayout
+    <ProjectChatLayout
       sidebarProps={{
-        chats: chats.map((c) => ({ id: c.id, title: c.title })),
+        chats: chats.map((c) => ({ id: c.id, title: c.title, projectId: c.projectId })),
+        currentChatId,
         onNewChat: newChat,
         onSelectChat: selectChat,
         onDeleteChat: deleteChat,
@@ -49,6 +52,6 @@ export default function IndexPage() {
           )}
         </div>
       ))}
-    </ChatLayout>
+    </ProjectChatLayout>
   )
 }
