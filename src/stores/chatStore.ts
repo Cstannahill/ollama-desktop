@@ -157,25 +157,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
   send: async (text: string, attachments: Attachment[] = []) => {
-    console.log("🚀 Chat send started", { text, attachments, enabledTools: get().enabledTools });
+    // Reduce console logging for better performance
     
     // Set initial loading status
     get().setChatStatus({ type: 'loading', message: 'Preparing message...' });
     
     let chatId = get().currentChatId;
     if (!chatId) {
-      console.log("📝 No current chat, creating new one");
       get().newChat();
       chatId = get().currentChatId as string;
     }
     const chat = get().chats.find((c) => c.id === chatId)!;
     const threadId = chat.threadId;
-    console.log("🔗 Using thread ID:", threadId);
 
     const user: Message = { id: crypto.randomUUID(), role: "user", text, attachments };
     const assistant: Message = { id: crypto.randomUUID(), role: "assistant", text: "" };
-    
-    console.log("💬 Adding messages to chat", { userId: user.id, assistantId: assistant.id });
     
     set((s) => {
       const chats = s.chats.map((c) =>
@@ -185,28 +181,59 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     const assistantId = assistant.id;
 
-    const unlistenToken = await listen<string>("chat-token", (e) => {
-      console.log("📨 Received chat-token:", e.payload);
+    // Throttle token updates for smoother performance
+    let tokenBuffer = '';
+    let lastTokenUpdate = 0;
+    const TOKEN_UPDATE_INTERVAL = 50; // 50ms throttle for smoother updates
+    
+    const updateTokens = () => {
+      if (!tokenBuffer) return;
+      
+      const currentBuffer = tokenBuffer;
+      tokenBuffer = '';
+      
       set((s) => {
-        const chats = s.chats.map((c) => {
-          if (c.id !== chatId) return c;
-          const msgs = c.messages.map((m) =>
-            m.id === assistantId ? { ...m, text: m.text + e.payload } : m
-          );
-          return { ...c, messages: msgs };
-        });
-        const msgs = s.messages.map((m) =>
-          m.id === assistantId ? { ...m, text: m.text + e.payload } : m
+        // Only update current messages for better performance
+        const updatedMessages = s.messages.map((m) =>
+          m.id === assistantId ? { ...m, text: m.text + currentBuffer } : m
         );
-        return { chats, messages: msgs };
+        
+        // Only update the specific chat, not all chats
+        const updatedChats = s.chats.map((c) => {
+          if (c.id !== chatId) return c;
+          return {
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === assistantId ? { ...m, text: m.text + currentBuffer } : m
+            )
+          };
+        });
+        
+        return { 
+          ...s,
+          chats: updatedChats, 
+          messages: updatedMessages 
+        };
       });
+    };
+
+    const unlistenToken = await listen<string>("chat-token", (e) => {
+      // Optimize: Only update if we have actual content
+      if (!e.payload) return;
+      
+      tokenBuffer += e.payload;
+      
+      const now = Date.now();
+      if (now - lastTokenUpdate >= TOKEN_UPDATE_INTERVAL) {
+        lastTokenUpdate = now;
+        updateTokens();
+      }
     });
 
     let toolMsgId: string | null = null;
     const unlistenTool = await listen<{ name: string; content: string }>(
       "tool-message",
       (e) => {
-        console.log("🔧 Received tool-message:", e.payload);
         get().setChatStatus({ type: 'tool-executing', message: `Executing ${e.payload.name}...` });
         set((s) => {
           const chats = s.chats.map((c) => {
@@ -235,7 +262,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     );
 
     const unlistenStream = await listen<string>("tool-stream", (e) => {
-      console.log("🌊 Received tool-stream:", e.payload.slice(0, 100) + "...");
       set((s) => {
         const chats = s.chats.map((c) => {
           if (c.id !== chatId) return c;
@@ -258,22 +284,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     const done = new Promise<void>((resolve) => {
       listen("chat-end", () => {
-        console.log("🏁 Received chat-end event");
+        // Flush any remaining tokens before ending
+        updateTokens();
         resolve();
       });
     });
 
-    console.log("📡 Setting up event listeners completed");
-
     try {
-      console.log("🎯 Invoking generate_chat with:", {
-        model: get().currentModel,
-        prompt: text,
-        ragEnabled: get().ragEnabled,
-        enabledTools: get().enabledTools,
-        allowedTools: get().enabledTools,
-        threadId,
-      });
       
       get().setChatStatus({ type: 'loading', message: 'Generating response...' });
       
@@ -286,9 +303,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         threadId,
       });
       
-      console.log("✅ generate_chat invoke completed, waiting for chat-end");
       await done;
-      console.log("🎉 Chat generation fully completed");
       
       // Auto-save the chat after completion
       await get().saveCurrentChat();
@@ -302,11 +317,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Clear error status after 3 seconds
       setTimeout(() => get().setChatStatus(null), 3000);
     } finally {
-      console.log("🧹 Cleaning up event listeners");
       unlistenToken();
       unlistenTool();
       unlistenStream();
-      console.log("✨ Cleanup completed");
     }
   },
 }));
